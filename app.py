@@ -55,7 +55,7 @@ class AppConfig(object):
     COMPANY_NAME = "Meeran Rashith"
     HTTP_TIMEOUT = 30
     MAX_DOWNLOAD_RETRIES = 3
-    UPDATE_URLS = ["https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/"]
+    UPDATE_URLS = ["https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/"]
     # --- SECURITY ENHANCEMENT ---
     # Public Key for verifying updates.
     PUBLIC_KEY = 'djeV18vHUKwPhFXxHL8BX+Q6SsqsQXe8PoEDuker95A'
