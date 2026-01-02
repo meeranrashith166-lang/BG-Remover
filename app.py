@@ -48,14 +48,14 @@ except Exception:
     BEN_Base = None
     has_ben2 = False
 
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 
 class AppConfig(object):
     APP_NAME = "BG Remover"
     COMPANY_NAME = "Meeran Rashith"
     HTTP_TIMEOUT = 30
     MAX_DOWNLOAD_RETRIES = 3
-    UPDATE_URLS = ["https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/"]
+    UPDATE_URLS = ["https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/"]
     # --- SECURITY ENHANCEMENT ---
     # Public Key for verifying updates.
     PUBLIC_KEY = 'djeV18vHUKwPhFXxHL8BX+Q6SsqsQXe8PoEDuker95A'

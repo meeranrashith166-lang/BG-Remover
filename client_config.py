@@ -4,4 +4,4 @@ class ClientConfig(object):
     COMPANY_NAME = 'Meeran Rashith'
     HTTP_TIMEOUT = 30
     MAX_DOWNLOAD_RETRIES = 3
-    UPDATE_URLS = ['https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/']
+    UPDATE_URLS = ['https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/']
