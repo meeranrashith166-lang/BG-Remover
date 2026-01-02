@@ -197,3 +197,303 @@ Traceback (most recent call last):
   File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 551, in _verify_sig
     if "signature" in data.keys():
 AttributeError: 'NoneType' object has no attribute 'keys'
+2026-01-02 14:39:12,385 - DEBUG - Version - 4.0
+2026-01-02 14:39:12,385 - DEBUG - PyUpdater Version 4.0
+2026-01-02 14:39:13,988 - DEBUG - Setting up directories...
+2026-01-02 14:39:13,988 - DEBUG - Downloading key file
+2026-01-02 14:39:13,988 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:39:13,988 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/keys.gz
+2026-01-02 14:39:14,430 - DEBUG - Received a non-200 response 404
+2026-01-02 14:39:14,430 - DEBUG - Could not create resource URL.
+2026-01-02 14:39:14,430 - DEBUG - Key file download successful
+2026-01-02 14:39:14,430 - DEBUG - Writing keys.gz file to disk
+2026-01-02 14:39:14,434 - ERROR - Update check failed:
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 68, in check_for_updates_async
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 14:39:17,157 - DEBUG - Setting up directories...
+2026-01-02 14:39:17,157 - DEBUG - Downloading key file
+2026-01-02 14:39:17,157 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:39:17,157 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/keys.gz
+2026-01-02 14:39:17,348 - DEBUG - Received a non-200 response 404
+2026-01-02 14:39:17,348 - DEBUG - Could not create resource URL.
+2026-01-02 14:39:17,348 - DEBUG - Key file download successful
+2026-01-02 14:39:17,364 - DEBUG - Writing keys.gz file to disk
+2026-01-02 14:39:17,365 - ERROR - Manual update check failed.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 483, in manual_update
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 14:43:49,364 - DEBUG - Version - 4.0
+2026-01-02 14:43:49,364 - DEBUG - PyUpdater Version 4.0
+2026-01-02 14:43:51,130 - DEBUG - Setting up directories...
+2026-01-02 14:43:51,131 - DEBUG - Downloading key file
+2026-01-02 14:43:51,131 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:43:51,131 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/keys.gz
+2026-01-02 14:43:51,571 - DEBUG - Received a non-200 response 404
+2026-01-02 14:43:51,574 - DEBUG - Could not create resource URL.
+2026-01-02 14:43:51,574 - DEBUG - Key file download successful
+2026-01-02 14:43:51,574 - DEBUG - Writing keys.gz file to disk
+2026-01-02 14:43:51,574 - ERROR - Update check failed:
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 68, in check_for_updates_async
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 14:43:55,887 - DEBUG - Setting up directories...
+2026-01-02 14:43:55,887 - DEBUG - Downloading key file
+2026-01-02 14:43:55,887 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:43:55,887 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/updates/keys.gz
+2026-01-02 14:43:56,093 - DEBUG - Received a non-200 response 404
+2026-01-02 14:43:56,093 - DEBUG - Could not create resource URL.
+2026-01-02 14:43:56,093 - DEBUG - Key file download successful
+2026-01-02 14:43:56,093 - DEBUG - Writing keys.gz file to disk
+2026-01-02 14:43:56,093 - ERROR - Manual update check failed.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 483, in manual_update
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 14:54:01,251 - DEBUG - Version - 4.0
+2026-01-02 14:54:01,267 - DEBUG - PyUpdater Version 4.0
+2026-01-02 14:54:04,817 - DEBUG - Setting up directories...
+2026-01-02 14:54:04,818 - DEBUG - Downloading key file
+2026-01-02 14:54:04,818 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:54:04,819 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 14:54:05,361 - DEBUG - Resource URL: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 14:54:05,361 - DEBUG - Got content length of: 181
+2026-01-02 14:54:05,365 - DEBUG - Block size: 360
+2026-01-02 14:54:05,365 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'downloading', 'percent_complete': '100.0', 'time': '00:00'}
+2026-01-02 14:54:05,365 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'finished', 'percent_complete': '100.0', 'time': '00:00'}
+2026-01-02 14:54:05,366 - DEBUG - Download Complete
+2026-01-02 14:54:05,366 - DEBUG - No hash to verify
+2026-01-02 14:54:05,368 - DEBUG - Key file download successful
+2026-01-02 14:54:05,368 - DEBUG - Writing keys.gz file to disk
+2026-01-02 14:54:05,371 - DEBUG - Key file verified
+2026-01-02 14:54:05,371 - DEBUG - Loading version file...
+2026-01-02 14:54:05,371 - DEBUG - Downloading online version file
+2026-01-02 14:54:05,371 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:54:05,371 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/versions-win.gz
+2026-01-02 14:54:05,781 - DEBUG - Received a non-200 response 404
+2026-01-02 14:54:05,784 - DEBUG - Could not create resource URL.
+2026-01-02 14:54:05,784 - DEBUG - Version file download successful
+2026-01-02 14:54:05,784 - DEBUG - Writing versions-win.gz file to disk
+2026-01-02 14:54:05,785 - DEBUG - Data type: <class 'bytes'>
+2026-01-02 14:54:05,785 - DEBUG - Json failed to load: ValueError
+2026-01-02 14:54:05,785 - DEBUG - Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 520, in _get_update_manifest
+    self.json_data = json.loads(data.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 14:54:05,786 - ERROR - Update check failed:
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 68, in check_for_updates_async
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 218, in refresh
+    self._get_update_manifest()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 540, in _get_update_manifest
+    self._verify_sig(self.json_data)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 551, in _verify_sig
+    if "signature" in data.keys():
+AttributeError: 'NoneType' object has no attribute 'keys'
+2026-01-02 14:54:12,764 - DEBUG - Setting up directories...
+2026-01-02 14:54:12,764 - DEBUG - Downloading key file
+2026-01-02 14:54:12,764 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:54:12,764 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 14:54:12,971 - DEBUG - Resource URL: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 14:54:12,971 - DEBUG - Got content length of: 181
+2026-01-02 14:54:12,971 - DEBUG - Block size: 360
+2026-01-02 14:54:12,971 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'downloading', 'percent_complete': '100.0', 'time': '--:--'}
+2026-01-02 14:54:12,971 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'finished', 'percent_complete': '100.0', 'time': '00:00'}
+2026-01-02 14:54:12,971 - DEBUG - Download Complete
+2026-01-02 14:54:12,971 - DEBUG - No hash to verify
+2026-01-02 14:54:12,971 - DEBUG - Key file download successful
+2026-01-02 14:54:12,971 - DEBUG - Writing keys.gz file to disk
+2026-01-02 14:54:12,971 - DEBUG - Key file verified
+2026-01-02 14:54:12,971 - DEBUG - Loading version file...
+2026-01-02 14:54:12,971 - DEBUG - Downloading online version file
+2026-01-02 14:54:12,971 - DEBUG - HTTP Timeout is 30
+2026-01-02 14:54:12,971 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/versions-win.gz
+2026-01-02 14:54:13,164 - DEBUG - Received a non-200 response 404
+2026-01-02 14:54:13,164 - DEBUG - Could not create resource URL.
+2026-01-02 14:54:13,164 - DEBUG - Version file download successful
+2026-01-02 14:54:13,164 - DEBUG - Writing versions-win.gz file to disk
+2026-01-02 14:54:13,164 - DEBUG - Data type: <class 'bytes'>
+2026-01-02 14:54:13,164 - DEBUG - Json failed to load: ValueError
+2026-01-02 14:54:13,170 - DEBUG - Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 520, in _get_update_manifest
+    self.json_data = json.loads(data.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 14:54:13,170 - ERROR - Manual update check failed.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 483, in manual_update
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 218, in refresh
+    self._get_update_manifest()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 540, in _get_update_manifest
+    self._verify_sig(self.json_data)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 551, in _verify_sig
+    if "signature" in data.keys():
+AttributeError: 'NoneType' object has no attribute 'keys'
+2026-01-02 15:00:08,971 - DEBUG - Version - 4.0
+2026-01-02 15:00:08,977 - DEBUG - PyUpdater Version 4.0
+2026-01-02 15:00:12,449 - DEBUG - Setting up directories...
+2026-01-02 15:00:12,450 - DEBUG - Downloading key file
+2026-01-02 15:00:12,450 - DEBUG - HTTP Timeout is 30
+2026-01-02 15:00:12,450 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 15:00:12,897 - DEBUG - Resource URL: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 15:00:12,897 - DEBUG - Got content length of: 181
+2026-01-02 15:00:12,897 - DEBUG - Block size: 360
+2026-01-02 15:00:12,912 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'downloading', 'percent_complete': '100.0', 'time': '00:00'}
+2026-01-02 15:00:12,912 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'finished', 'percent_complete': '100.0', 'time': '00:00'}
+2026-01-02 15:00:12,912 - DEBUG - Download Complete
+2026-01-02 15:00:12,912 - DEBUG - No hash to verify
+2026-01-02 15:00:12,912 - DEBUG - Key file download successful
+2026-01-02 15:00:12,912 - DEBUG - Writing keys.gz file to disk
+2026-01-02 15:00:12,914 - DEBUG - Key file verified
+2026-01-02 15:00:12,914 - DEBUG - Loading version file...
+2026-01-02 15:00:12,914 - DEBUG - Downloading online version file
+2026-01-02 15:00:12,914 - DEBUG - HTTP Timeout is 30
+2026-01-02 15:00:12,914 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/versions-win.gz
+2026-01-02 15:00:13,284 - DEBUG - Received a non-200 response 404
+2026-01-02 15:00:13,284 - DEBUG - Could not create resource URL.
+2026-01-02 15:00:13,284 - DEBUG - Version file download successful
+2026-01-02 15:00:13,284 - DEBUG - Writing versions-win.gz file to disk
+2026-01-02 15:00:13,291 - DEBUG - Data type: <class 'bytes'>
+2026-01-02 15:00:13,291 - DEBUG - Json failed to load: ValueError
+2026-01-02 15:00:13,291 - DEBUG - Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 520, in _get_update_manifest
+    self.json_data = json.loads(data.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 15:00:13,292 - ERROR - Update check failed:
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 68, in check_for_updates_async
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 218, in refresh
+    self._get_update_manifest()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 540, in _get_update_manifest
+    self._verify_sig(self.json_data)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 551, in _verify_sig
+    if "signature" in data.keys():
+AttributeError: 'NoneType' object has no attribute 'keys'
+2026-01-02 15:00:18,298 - DEBUG - Setting up directories...
+2026-01-02 15:00:18,298 - DEBUG - Downloading key file
+2026-01-02 15:00:18,298 - DEBUG - HTTP Timeout is 30
+2026-01-02 15:00:18,300 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 15:00:18,488 - DEBUG - Resource URL: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 15:00:18,488 - DEBUG - Got content length of: 181
+2026-01-02 15:00:18,488 - DEBUG - Block size: 360
+2026-01-02 15:00:18,488 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'downloading', 'percent_complete': '100.0', 'time': '--:--'}
+2026-01-02 15:00:18,488 - DEBUG - {'total': 181, 'downloaded': 181, 'status': 'finished', 'percent_complete': '100.0', 'time': '00:00'}
+2026-01-02 15:00:18,488 - DEBUG - Download Complete
+2026-01-02 15:00:18,488 - DEBUG - No hash to verify
+2026-01-02 15:00:18,488 - DEBUG - Key file download successful
+2026-01-02 15:00:18,488 - DEBUG - Writing keys.gz file to disk
+2026-01-02 15:00:18,488 - DEBUG - Key file verified
+2026-01-02 15:00:18,488 - DEBUG - Loading version file...
+2026-01-02 15:00:18,488 - DEBUG - Downloading online version file
+2026-01-02 15:00:18,488 - DEBUG - HTTP Timeout is 30
+2026-01-02 15:00:18,488 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/versions-win.gz
+2026-01-02 15:00:18,672 - DEBUG - Received a non-200 response 404
+2026-01-02 15:00:18,672 - DEBUG - Could not create resource URL.
+2026-01-02 15:00:18,672 - DEBUG - Version file download successful
+2026-01-02 15:00:18,672 - DEBUG - Writing versions-win.gz file to disk
+2026-01-02 15:00:18,672 - DEBUG - Data type: <class 'bytes'>
+2026-01-02 15:00:18,672 - DEBUG - Json failed to load: ValueError
+2026-01-02 15:00:18,672 - DEBUG - Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 520, in _get_update_manifest
+    self.json_data = json.loads(data.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 15:00:18,677 - ERROR - Manual update check failed.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 483, in manual_update
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 218, in refresh
+    self._get_update_manifest()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 540, in _get_update_manifest
+    self._verify_sig(self.json_data)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 551, in _verify_sig
+    if "signature" in data.keys():
+AttributeError: 'NoneType' object has no attribute 'keys'
