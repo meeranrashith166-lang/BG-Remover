@@ -55,46 +55,15 @@ class AppConfig(object):
     COMPANY_NAME = "Meeran Rashith"
     HTTP_TIMEOUT = 30
     MAX_DOWNLOAD_RETRIES = 3
-    UPDATE_URLS = ["https://github.com/meeranrashith166-lang/BG-Remover/tree/main/updates/"]
+    UPDATE_URLS = ["https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/"]
     # --- SECURITY ENHANCEMENT ---
-    # You MUST generate a keypair with `pyupdater keys -c` and keep the
-    # private key SECRET. Paste the public key here. This is critical
-    # for ensuring that only updates signed by you are trusted.
-    # The key below is a DUMMY and MUST be replaced.
-    PUBLIC_KEY = '''-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtzaY2YjWFo9t7Hq9Uh3t
-fkzeeu0V8P9Ww3scBcQlypLYV0HtZPNLV42e9HiyWzbDLn/1anMJvU2Br9vMW4jb
-pB7xiOIw+OgvmUs8OzjqDo1fDm+yJTI7dl67uxTClgzTvxJoQLY6sXBpLnAlzAoy
-mwXpjZjbB5hfBZe4u9zdm5K6xrMnfVIL4C1bcWaEWQR9W9jB5Qb73BlGzitHBFOF
-k6YvzcvkL4LkERNi2h2RVGv1GrGsctTaMorZIv5p/UU8ORSqvMerIezMlr0us+Hw
-8BZzx9DO9gD2lRLi74g+I75pRSowkf+gQVcHCTzGazZeDX8/GN7xtRmWE6hMwbPV
-AwIDAQAB
------END PUBLIC KEY-----
-
-
-
-'''
+    # Public Key for verifying updates.
+    PUBLIC_KEY = 'djeV18vHUKwPhFXxHL8BX+Q6SsqsQXe8PoEDuker95A'
 
 def check_for_updates_async():
     if not has_updater:
         return
-    # --- SECURITY ENHANCEMENT --- Ensure a real public key is set before checking.
-    if '''-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtzaY2YjWFo9t7Hq9Uh3t
-fkzeeu0V8P9Ww3scBcQlypLYV0HtZPNLV42e9HiyWzbDLn/1anMJvU2Br9vMW4jb
-pB7xiOIw+OgvmUs8OzjqDo1fDm+yJTI7dl67uxTClgzTvxJoQLY6sXBpLnAlzAoy
-mwXpjZjbB5hfBZe4u9zdm5K6xrMnfVIL4C1bcWaEWQR9W9jB5Qb73BlGzitHBFOF
-k6YvzcvkL4LkERNi2h2RVGv1GrGsctTaMorZIv5p/UU8ORSqvMerIezMlr0us+Hw
-8BZzx9DO9gD2lRLi74g+I75pRSowkf+gQVcHCTzGazZeDX8/GN7xtRmWE6hMwbPV
-AwIDAQAB
------END PUBLIC KEY-----
 
-
-
-
-''' in AppConfig.PUBLIC_KEY:
-        logging.warning("[SECURITY WARNING] Updater is disabled. A real public key has not been configured.")
-        return
     try:
         client = Client(AppConfig(), refresh=True)
         app_update = client.update_check(AppConfig.APP_NAME, APP_VERSION)
@@ -506,23 +475,7 @@ class BackgroundRemoverApp(QMainWindow):
         )
 
     def manual_update(self):
-        if '''-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtzaY2YjWFo9t7Hq9Uh3t
-fkzeeu0V8P9Ww3scBcQlypLYV0HtZPNLV42e9HiyWzbDLn/1anMJvU2Br9vMW4jb
-pB7xiOIw+OgvmUs8OzjqDo1fDm+yJTI7dl67uxTClgzTvxJoQLY6sXBpLnAlzAoy
-mwXpjZjbB5hfBZe4u9zdm5K6xrMnfVIL4C1bcWaEWQR9W9jB5Qb73BlGzitHBFOF
-k6YvzcvkL4LkERNi2h2RVGv1GrGsctTaMorZIv5p/UU8ORSqvMerIezMlr0us+Hw
-8BZzx9DO9gD2lRLi74g+I75pRSowkf+gQVcHCTzGazZeDX8/GN7xtRmWE6hMwbPV
-AwIDAQAB
------END PUBLIC KEY-----
 
-
-
-
-''' in AppConfig.PUBLIC_KEY:
-            QMessageBox.critical(self, "Update Error", "The updater is not configured correctly by the developer.")
-            return
-        # ... (rest of the function is unchanged)
         if not has_updater:
             QMessageBox.warning(self, "Update", "Updater not available. Please install pyupdater.")
             return

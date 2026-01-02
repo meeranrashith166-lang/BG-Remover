@@ -1,0 +1,101 @@
+2025-12-23 12:02:48,749 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model U²Net
+2025-12-23 12:02:59,030 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model U²NetP
+2025-12-23 12:03:05,924 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model U²Net Human Seg
+2025-12-23 12:03:16,527 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model MODNet
+2025-12-23 12:03:26,155 - ERROR - Security exception during background removal: Model file 'isnet-general-use.onnx' has been modified or is not the official version. Aborting.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 280, in run
+    raise SecurityException(
+SecurityException: Model file 'isnet-general-use.onnx' has been modified or is not the official version. Aborting.
+2025-12-23 12:03:26,156 - ERROR - Error displayed to user: Model file 'isnet-general-use.onnx' has been modified or is not the official version. Aborting.
+2025-12-23 12:03:35,378 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model IS-Net Anime
+2025-12-23 12:03:45,846 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model Bria RMBG v1.4
+2025-12-23 12:03:56,465 - INFO - [INFO] Using providers: ['CPUExecutionProvider'] for model BASNet
+2025-12-23 12:04:11,683 - ERROR - Security exception during background removal: Model file 'birefnet.onnx' has been modified or is not the official version. Aborting.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 280, in run
+    raise SecurityException(
+SecurityException: Model file 'birefnet.onnx' has been modified or is not the official version. Aborting.
+2025-12-23 12:04:11,684 - ERROR - Error displayed to user: Model file 'birefnet.onnx' has been modified or is not the official version. Aborting.
+2026-01-02 12:27:31,021 - DEBUG - Version - 4.0
+2026-01-02 12:27:31,037 - DEBUG - PyUpdater Version 4.0
+2026-01-02 12:27:39,563 - DEBUG - Setting up directories...
+2026-01-02 12:27:39,570 - DEBUG - Downloading key file
+2026-01-02 12:27:39,571 - DEBUG - HTTP Timeout is 30
+2026-01-02 12:27:39,571 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 12:27:39,585 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=0, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000280BEFC65F0>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed')': /meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 12:27:39,585 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=0, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000280BEFC67A0>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed')': /meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 12:27:39,585 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=0, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x00000280BEFC6950>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed')': /meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 12:27:39,585 - DEBUG - MaxRetryError
+2026-01-02 12:27:39,595 - DEBUG - Could not create resource URL.
+2026-01-02 12:27:39,598 - DEBUG - Key file download successful
+2026-01-02 12:27:39,600 - DEBUG - Writing keys.gz file to disk
+2026-01-02 12:27:39,601 - ERROR - Update check failed:
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 68, in check_for_updates_async
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 12:33:12,244 - DEBUG - Version - 4.0
+2026-01-02 12:33:12,260 - DEBUG - PyUpdater Version 4.0
+2026-01-02 12:33:21,969 - DEBUG - Setting up directories...
+2026-01-02 12:33:21,979 - DEBUG - Downloading key file
+2026-01-02 12:33:21,980 - DEBUG - HTTP Timeout is 30
+2026-01-02 12:33:21,981 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 12:33:22,540 - DEBUG - Received a non-200 response 404
+2026-01-02 12:33:22,540 - DEBUG - Could not create resource URL.
+2026-01-02 12:33:22,540 - DEBUG - Key file download successful
+2026-01-02 12:33:22,540 - DEBUG - Writing keys.gz file to disk
+2026-01-02 12:33:22,540 - ERROR - Update check failed:
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 68, in check_for_updates_async
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-02 12:34:32,758 - DEBUG - Setting up directories...
+2026-01-02 12:34:32,758 - DEBUG - Downloading key file
+2026-01-02 12:34:32,758 - DEBUG - HTTP Timeout is 30
+2026-01-02 12:34:32,760 - DEBUG - Url for request: https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/keys.gz
+2026-01-02 12:34:33,222 - DEBUG - Received a non-200 response 404
+2026-01-02 12:34:33,222 - DEBUG - Could not create resource URL.
+2026-01-02 12:34:33,222 - DEBUG - Key file download successful
+2026-01-02 12:34:33,222 - DEBUG - Writing keys.gz file to disk
+2026-01-02 12:34:33,222 - ERROR - Manual update check failed.
+Traceback (most recent call last):
+  File "D:\BG Remover\BG-Remover\app.py", line 483, in manual_update
+    client = Client(AppConfig(), refresh=True)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 213, in __init__
+    self.refresh()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 217, in refresh
+    self._get_signing_key()
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\site-packages\pyupdater\client\__init__.py", line 368, in _get_signing_key
+    key_data = json.loads(key_data_str.decode("utf-8"))
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "C:\Users\ASUS\AppData\Local\Programs\Python\Python310\lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

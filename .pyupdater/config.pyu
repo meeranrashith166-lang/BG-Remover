@@ -1,0 +1,38 @@
+{
+  "config_dir": "D:\\BG Remover\\BG-Remover\\.pyupdater",
+  "filename": "D:\\BG Remover\\BG-Remover\\.pyupdater\\config.pyu",
+  "count": 0,
+  "app_config": {
+    "APP_NAME": "BG Remover",
+    "CLIENT_CONFIG_PATH": [
+      "client_config.py"
+    ],
+    "COMPANY_NAME": "Meeran Rashith",
+    "PLUGIN_CONFIGS": {},
+    "UPDATE_PATCHES": true,
+    "MAX_DOWNLOAD_RETRIES": 3,
+    "HTTP_TIMEOUT": 30,
+    "UPDATE_URLS": [
+      "https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/"
+    ],
+    "DATA_DIR": "D:\\BG Remover\\BG-Remover"
+  },
+  "version_meta": {
+    "updates": {}
+  },
+  "py_repo_config": {
+    "patches": {}
+  },
+  "keypack": {
+    "client": {
+      "offline_public": "djeV18vHUKwPhFXxHL8BX+Q6SsqsQXe8PoEDuker95A"
+    },
+    "repo": {
+      "app_private": "p14cEAwl+XVOLBJaTGl/hYjEgaMQMEje2lIyoKFvuQk"
+    },
+    "upload": {
+      "app_public": "RG4xHtDGoS5Kx1EOCNiymnYIX27e1Vx2PgiaIdiAAQ0",
+      "signature": "Zym/NY+e36w9r1TbU2Pt6+wmAHP72OE/sXd9eKPkr1gxDq39N91uK/n9cM4EZQXen9s7m+fl/78jahKGnD4PAg"
+    }
+  }
+}
