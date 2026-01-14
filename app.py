@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QVBoxLayout,
     QWidget, QHBoxLayout, QSlider, QComboBox, QProgressBar, QScrollArea, QMessageBox, QSpinBox
 )
+import gc
 from PyQt5.QtGui import QPixmap, QImage, QIcon, QFont, QKeySequence
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QEvent
 from PyQt5.QtWidgets import QShortcut
@@ -28,12 +29,22 @@ import re
 
 warnings.filterwarnings("ignore", message="torch.meshgrid")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filename='app.log',
-    filemode='a' 
-)
+# --- IMPROVED LOGGING CONFIGURATION ---
+def setup_logging():
+    log_dir = os.path.join(os.getenv('LOCALAPPDATA'), 'BG Remover')
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, 'app.log')
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        filename=log_file,
+        filemode='a'
+    )
+    return log_file
+
+log_file_path = setup_logging()
+# --- END IMPROVED LOGGING ---
 
 try:
     from pyupdater.client import Client
@@ -109,11 +120,11 @@ MODEL_HASHES = {
     "models/u2netp.onnx": "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
     "models/u2net_human_seg.onnx": "01eb6a29a5c4d8edb30b56adad9bb3a2a0535338e480724a213e0acfd2d1c73c",
     "models/modnet.onnx": "07c308cf0fc7e6e8b2065a12ed7fc07e1de8febb7dc7839d7b7f15dd66584df9",
-    "models/isnet-general-use.onnx": "4c56bbc21588459dda11efba5a4a8ee163969da109ae170fb1988c1c2ea4a90a",
+    "models/isnet-general-use.onnx": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a",
     "models/isnet-anime.onnx": "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99",
     "models/bria_rmbg_1.4.onnx": "8cafcf770b06757c4eaced21b1a88e57fd2b66de01b8045f35f01535ba742e0f",
     "models/basnet.onnx": "2766aaedd02b2e301ba3efe908f7b10455077b842c328a0fb900c5c0d8080b8a",
-    "models/birefnet.onnx": "58f621f00f5d756097615970a88a791584600dcf7c45b18a0a6267535a1ebd3c",
+    "models/birefnet.onnx": "6470117bac6f8d82a3f62921056f52d0f5c4d36d1d832096331d5ea38a03acb5",
 }
 
 def verify_file_hash(file_path, expected_hash):
@@ -256,7 +267,14 @@ class RemoveBackgroundThread(QThread):
 
                 available_providers = ort.get_available_providers()
                 providers = ["CPUExecutionProvider"] # Forced CPU
-                session = ort.InferenceSession(model_path, providers=providers)
+
+                # --- MEMORY OPTIMIZATION: Reduce memory usage ---
+                gc.collect()
+                sess_options = ort.SessionOptions()
+                sess_options.enable_cpu_mem_arena = False
+                session = ort.InferenceSession(model_path, sess_options=sess_options, providers=providers)
+                # -----------------------------------------------
+
                 logging.info(f"[INFO] Using providers: {providers} for model {self.model_name}")
 
                 img_input = preprocess_for_model(self.image_np, self.model_name, session)
@@ -345,7 +363,16 @@ class RemoveBackgroundThread(QThread):
         except Exception as e:
             # --- NEW SECURITY ENHANCEMENT: Secure Error Handling ---
             logging.error("An unexpected error occurred during background removal.", exc_info=True)
-            self.error.emit("Processing failed due to an internal error. Check app.log for details.")
+            error_msg = str(e)
+            if "bad allocation" in error_msg or "memory" in error_msg.lower():
+                self.error.emit(
+                    f"Processing failed due to insufficient memory.\n\n"
+                    f"The selected model ({self.model_name}) is too large for your system.\n"
+                    f"Please try selecting a smaller model like 'U2Net' or 'IS-Net'.\n\n"
+                    f"Technical Error: {error_msg}"
+                )
+            else:
+                self.error.emit(f"Processing failed: {error_msg}\n\nSee log at:\n{log_file_path}")
             # --- END NEW SECURITY ENHANCEMENT ---
 
 class BackgroundRemoverApp(QMainWindow):
@@ -497,7 +524,7 @@ class BackgroundRemoverApp(QMainWindow):
                 QMessageBox.information(self, "Update", "You are already running the latest version.")
         except Exception as e:
             logging.error("Manual update check failed.", exc_info=True)
-            QMessageBox.critical(self, "Update Error", f"Update check failed. See app.log for details.")
+            QMessageBox.critical(self, "Update Error", f"Update check failed: {str(e)}\n\nSee log at:\n{log_file_path}")
 
     def create_icon_button(self, text, icon_file, callback, font):
         # ... (function is unchanged)
@@ -641,7 +668,7 @@ class BackgroundRemoverApp(QMainWindow):
             except Exception as e:
                 # --- NEW SECURITY ENHANCEMENT: Secure Error Handling ---
                 logging.error(f"Failed to save image to {filename}", exc_info=True)
-                QMessageBox.critical(self, "Save Error", f"Failed to save image. See app.log for details.")
+                QMessageBox.critical(self, "Save Error", f"Failed to save image: {str(e)}\n\nSee log at:\n{log_file_path}")
                 # --- END NEW SECURITY ENHANCEMENT ---
     
     # --- SECURITY ENHANCEMENT: Safe Save Path Check ---
@@ -876,7 +903,7 @@ class BackgroundRemoverApp(QMainWindow):
         except Exception as e:
             # --- NEW SECURITY ENHANCEMENT: Secure Error Handling ---
             logging.error(f"Failed to load image from path: {path}", exc_info=True)
-            QMessageBox.critical(self, "Error Loading Image", f"Failed to load image. See app.log for details.")
+            QMessageBox.critical(self, "Error Loading Image", f"Failed to load image: {str(e)}\n\nSee log at:\n{log_file_path}")
             # --- END NEW SECURITY ENHANCEMENT ---
 
 
