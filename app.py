@@ -1,24 +1,36 @@
 import sys
 import os
+import warnings
+
+# --- WARNING SUPPRESSION ---
+# Must be done before importing libraries that might emit warnings
+os.environ["QT_LOGGING_RULES"] = "qt.qpa.fonts*=false;qt.text.font*=false" # Suppress Qt font warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="rembg.*")
+warnings.filterwarnings("ignore", message=".*'mode' parameter is deprecated.*")
+
+# ---------------------------
+
+import webbrowser
 import struct
 import numpy as np
 from numpy import packbits
 import cv2
-import warnings
 import logging
 import mimetypes
 import hashlib
+import json
 from PIL import Image
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QVBoxLayout,
-    QWidget, QHBoxLayout, QSlider, QComboBox, QProgressBar, QScrollArea, QMessageBox, QSpinBox
+    QWidget, QHBoxLayout, QSlider, QComboBox, QProgressBar, QScrollArea, QMessageBox, QSpinBox,
+    QDialog
 )
 import gc
 from PyQt5.QtGui import QPixmap, QImage, QIcon, QFont, QKeySequence
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QEvent
 from PyQt5.QtWidgets import QShortcut
 import onnxruntime as ort
-from rembg import remove as rembg_remove
+from rembg import remove as rembg_remove, new_session
 import math
 import threading
 import urllib.request
@@ -27,7 +39,9 @@ from pytoshop.user import nested_layers
 from pytoshop import enums
 import re
 
-warnings.filterwarnings("ignore", message="torch.meshgrid")
+
+
+
 
 # --- IMPROVED LOGGING CONFIGURATION ---
 def setup_logging():
@@ -59,14 +73,14 @@ except Exception:
     BEN_Base = None
     has_ben2 = False
 
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.0"
 
 class AppConfig(object):
-    APP_NAME = "BG Remover"
+    APP_NAME = "BGRemover"
     COMPANY_NAME = "Meeran Rashith"
     HTTP_TIMEOUT = 30
     MAX_DOWNLOAD_RETRIES = 3
-    UPDATE_URLS = ["https://raw.githubusercontent.com/meeranrashith166-lang/BG-Remover/main/updates/"]
+    UPDATE_URLS = ["https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/"]
     # --- SECURITY ENHANCEMENT ---
     # Public Key for verifying updates.
     PUBLIC_KEY = 'djeV18vHUKwPhFXxHL8BX+Q6SsqsQXe8PoEDuker95A'
@@ -85,6 +99,8 @@ def check_for_updates_async():
             if app_update.is_downloaded():
                 logging.info("Update ready. Restarting...")
                 app_update.extract_restart()
+    except ValueError:
+        logging.error("Update check failed: Server returned invalid response (likely missing update files).")
     except Exception as e:
         logging.error("Update check failed:", exc_info=True)
 
@@ -94,19 +110,36 @@ try:
 except ImportError:
     has_pywin32 = False
 
-ASSETS_DIR = "assets"
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        # If not running as a PyInstaller bundle, use the script's directory
+        # Or if it's a frozen executable (one-dir), look relative to the executable
+        if getattr(sys, 'frozen', False):
+             base_path = os.path.dirname(sys.executable)
+             # Modern PyInstaller places dependencies in _internal
+             if os.path.exists(os.path.join(base_path, "_internal")):
+                 base_path = os.path.join(base_path, "_internal")
+        else:
+             base_path = os.path.dirname(os.path.abspath(__file__))
+
+    return os.path.join(base_path, relative_path)
+
+ASSETS_DIR = resource_path("assets")
 MODELS = {
     "Auto (Rembg)": None,
-    "U²Net": "models/u2net.onnx",
-    "U²NetP": "models/u2netp.onnx",
-    "U²Net Human Seg": "models/u2net_human_seg.onnx",
-    "MODNet": "models/modnet.onnx",
-    "IS-Net": "models/isnet-general-use.onnx",
-    "IS-Net Anime": "models/isnet-anime.onnx",
-    "Bria RMBG v1.4": "models/bria_rmbg_1.4.onnx",
-    "BASNet": "models/basnet.onnx",
-
-    "BiRefNet": "models/birefnet.onnx"
+    "U²Net": resource_path("models/u2net.onnx"),
+    "U²NetP": resource_path("models/u2netp.onnx"),
+    "U²Net Human Seg": resource_path("models/u2net_human_seg.onnx"),
+    "MODNet": resource_path("models/modnet.onnx"),
+    "IS-Net": resource_path("models/isnet-general-use.onnx"),
+    "IS-Net Anime": resource_path("models/isnet-anime.onnx"),
+    "Bria RMBG v1.4": resource_path("models/bria_rmbg_1.4.onnx"),
+    "BASNet": resource_path("models/basnet.onnx")
 }
 
 # --- NEWLY ADDED: Model File Integrity Check ---
@@ -116,16 +149,22 @@ MODELS = {
 # Windows: certutil -file models/u2net.onnx SHA256
 # Linux/macOS: shasum -a 256 models/u2net.onnx
 MODEL_HASHES = {
-    "models/u2net.onnx": "8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491",
-    "models/u2netp.onnx": "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
-    "models/u2net_human_seg.onnx": "01eb6a29a5c4d8edb30b56adad9bb3a2a0535338e480724a213e0acfd2d1c73c",
-    "models/modnet.onnx": "07c308cf0fc7e6e8b2065a12ed7fc07e1de8febb7dc7839d7b7f15dd66584df9",
-    "models/isnet-general-use.onnx": "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a",
-    "models/isnet-anime.onnx": "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99",
-    "models/bria_rmbg_1.4.onnx": "8cafcf770b06757c4eaced21b1a88e57fd2b66de01b8045f35f01535ba742e0f",
-    "models/basnet.onnx": "2766aaedd02b2e301ba3efe908f7b10455077b842c328a0fb900c5c0d8080b8a",
-    "models/birefnet.onnx": "6470117bac6f8d82a3f62921056f52d0f5c4d36d1d832096331d5ea38a03acb5",
+    resource_path("models/u2net.onnx"): "8d10d2f3bb75ae3b6d527c77944fc5e7dcd94b29809d47a739a7a728a912b491",
+    resource_path("models/u2netp.onnx"): "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
+    resource_path("models/u2net_human_seg.onnx"): "01eb6a29a5c4d8edb30b56adad9bb3a2a0535338e480724a213e0acfd2d1c73c",
+    resource_path("models/modnet.onnx"): "07c308cf0fc7e6e8b2065a12ed7fc07e1de8febb7dc7839d7b7f15dd66584df9",
+    resource_path("models/isnet-general-use.onnx"): "60920e99c45464f2ba57bee2ad08c919a52bbf852739e96947fbb4358c0d964a",
+    resource_path("models/isnet-anime.onnx"): "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99",
+    resource_path("models/bria_rmbg_1.4.onnx"): "8cafcf770b06757c4eaced21b1a88e57fd2b66de01b8045f35f01535ba742e0f",
+    resource_path("models/basnet.onnx"): "2766aaedd02b2e301ba3efe908f7b10455077b842c328a0fb900c5c0d8080b8a",
+    resource_path("models/birefnet.onnx"): "6470117bac6f8d82a3f62921056f52d0f5c4d36d1d832096331d5ea38a03acb5",
 }
+
+# --- REMBG LOCAL MODEL CONFIGURATION ---
+# Force rembg to look for u2net.onnx in our bundled 'models' directory
+# instead of ~/.u2net or trying to download it.
+os.environ["U2NET_HOME"] = resource_path("models")
+# ---------------------------------------
 
 def verify_file_hash(file_path, expected_hash):
     """Calculates the SHA-256 of a file and compares it to an expected value."""
@@ -169,9 +208,11 @@ def get_ben2_model():
     Loads the model on first call.
     """
     global _ben2_cache, _ben2_device
-    if not has_ben2:
-        raise RuntimeError("BEN2 package not installed.")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return None # BEN2 disabled for CPU bridge
+    # if not has_ben2:
+    #     raise RuntimeError("BEN2 package not installed.")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = "cpu"
     if _ben2_cache is None or _ben2_device != device:
         # BEN_Base.from_pretrained will download weights if needed (Hugging Face / repo configured)
         _ben2_cache = BEN_Base.from_pretrained("PramaLLC/BEN2")
@@ -225,7 +266,7 @@ class RemoveBackgroundThread(QThread):
 
             if self.model_name == "Auto (Rembg)":
                 self.progress.emit(10)
-                pil_out = rembg_remove(Image.fromarray(self.image_np))
+                pil_out = rembg_remove(Image.fromarray(self.image_np), session=new_session("u2net", providers=['CUDAExecutionProvider', 'CPUExecutionProvider']))
                 if pil_out is None:
                     raise RuntimeError("rembg failed to process image.")
                 pil_out = pil_out.convert("RGBA")
@@ -266,7 +307,12 @@ class RemoveBackgroundThread(QThread):
                 # --- END NEWLY ADDED SECTION ---
 
                 available_providers = ort.get_available_providers()
-                providers = ["CPUExecutionProvider"] # Forced CPU
+                if torch.cuda.is_available():
+                    logging.info(f"CUDA is available: {torch.cuda.get_device_name(0)}")
+                    providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+                else:
+                    logging.warning("CUDA not available, falling back to CPU")
+                    providers = ["CPUExecutionProvider"]
 
                 # --- MEMORY OPTIMIZATION: Reduce memory usage ---
                 gc.collect()
@@ -419,6 +465,7 @@ class BackgroundRemoverApp(QMainWindow):
         settings_menu.addAction("Feather Strength", lambda: self.feather_spinbox.setFocus() if hasattr(self, "feather_spinbox") else None)
         help_menu = menubar.addMenu("Help")
         help_menu.addAction("Check for Updates", self.manual_update)
+        help_menu.addAction("Feedback / Report Bug", self.show_feedback_dialog)
         help_menu.addAction("About", self.show_about)
         self.image_label = QLabel("Drop or Load Image")
         self.image_label.setAlignment(Qt.AlignCenter)
@@ -522,9 +569,51 @@ class BackgroundRemoverApp(QMainWindow):
                         app_update.extract_restart()
             else:
                 QMessageBox.information(self, "Update", "You are already running the latest version.")
+        except ValueError:
+             logging.error("Manual update check failed: Invalid server response.")
+             QMessageBox.warning(self, "Update Error", 
+                                 "Could not check for updates.\n\n"
+                                 "The update server returned an invalid response (likely missing files).\n"
+                                 "Please try again later.")
         except Exception as e:
             logging.error("Manual update check failed.", exc_info=True)
             QMessageBox.critical(self, "Update Error", f"Update check failed: {str(e)}\n\nSee log at:\n{log_file_path}")
+
+    def show_feedback_dialog(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Feedback / Report Bug")
+        dialog.setFixedWidth(400)
+        
+        layout = QVBoxLayout()
+        
+        info_label = QLabel(
+            "<h3>Found a bug or have feedback?</h3>"
+            "<p>We appreciate your feedback! If you are experiencing issues or have suggestions, please email us directly.</p>"
+            "<p><b>Email:</b> <a href='mailto:meeranrashith166@gmail.com'>meeranrashith166@gmail.com</a></p>"
+            "<br>"
+            "<i>Your feedback helps us make BG Remover better!</i>"
+        )
+        info_label.setWordWrap(True)
+        info_label.setTextFormat(Qt.RichText)
+        info_label.setOpenExternalLinks(True)
+        layout.addWidget(info_label)
+        
+        btn_layout = QHBoxLayout()
+        
+        email_btn = QPushButton("Send Feedback via Email")
+        email_btn.setStyleSheet("background-color: #0078d7; color: white; font-weight: bold;")
+        email_btn.clicked.connect(lambda: webbrowser.open("mailto:meeranrashith166@gmail.com?subject=BG Remover Feedback"))
+        
+        btn_layout.addWidget(email_btn)
+        
+        layout.addLayout(btn_layout)
+        
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
 
     def create_icon_button(self, text, icon_file, callback, font):
         # ... (function is unchanged)

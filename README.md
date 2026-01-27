@@ -1,2 +1,0 @@
-# BG-Remover
-
