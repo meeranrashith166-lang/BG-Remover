@@ -2,11 +2,11 @@
 
 
 a = Analysis(
-    ['D:\\BG Remover\\BG-Remover\\app.py'],
+    ['D:\\BG Remover\\BG-Remover\\BGRemover.py'],
     pathex=['D:\\BG Remover\\BG-Remover'],
     binaries=[],
-    datas=[('D:\\BG Remover\\BG-Remover\\assets', 'assets'), ('D:\\BG Remover\\BG-Remover\\models', 'models')],
-    hiddenimports=['onnxruntime', 'rembg', 'PIL', 'cv2', 'numpy'],
+    datas=[],
+    hiddenimports=[],
     hookspath=['C:\\Users\\ASUS\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\pyupdater\\hooks'],
     hooksconfig={},
     runtime_hooks=[],

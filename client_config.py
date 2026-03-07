@@ -1,5 +1,5 @@
 class ClientConfig(object):
-    PUBLIC_KEY = 'djeV18vHUKwPhFXxHL8BX+Q6SsqsQXe8PoEDuker95A'
+    PUBLIC_KEY = '/9uGLH0xRS+mh+F7cX15ueVeP/29LpLM5ZA4LV5PynY'
     APP_NAME = 'BGRemover'
     COMPANY_NAME = 'Meeran Rashith'
     HTTP_TIMEOUT = 30

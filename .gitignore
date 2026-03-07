@@ -1,0 +1,17 @@
+# Large binaries and installers
+*.zip
+*.exe
+*.dll
+
+# PyUpdater data
+pyu-data/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+build/
+dist/
+*.spec
