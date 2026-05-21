@@ -341,50 +341,74 @@ class TourDialog(QDialog):
 
     def init_ui(self):
         self.setWindowTitle("BG Remover Tour")
-        self.setFixedSize(500, 450)
+        self.setFixedSize(540, 500)
         self.setModal(True)
         
         layout = QVBoxLayout()
+        layout.setContentsMargins(20, 20, 20, 16)
+        layout.setSpacing(12)
         
         # Image area
         self.image_label = QLabel()
-        self.image_label.setFixedSize(480, 250)
+        self.image_label.setFixedSize(500, 260)
         self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 8px;")
+        self.image_label.setStyleSheet("""
+            background-color: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 12px;
+        """)
         layout.addWidget(self.image_label)
         
         # Text area
         text_container = QFrame()
         text_layout = QVBoxLayout(text_container)
+        text_layout.setContentsMargins(10, 0, 10, 0)
         
         self.title_label = QLabel()
-        self.title_label.setFont(QFont("Arial", 14, QFont.Bold))
+        self.title_label.setFont(QFont("Segoe UI", 15, QFont.Bold))
         self.title_label.setWordWrap(True)
         self.title_label.setAlignment(Qt.AlignCenter)
         text_layout.addWidget(self.title_label)
         
         self.desc_label = QLabel()
-        self.desc_label.setFont(QFont("Arial", 10))
+        self.desc_label.setFont(QFont("Segoe UI", 10))
         self.desc_label.setWordWrap(True)
         self.desc_label.setAlignment(Qt.AlignCenter)
-        self.desc_label.setStyleSheet("color: #555; margin-top: 10px;")
+        self.desc_label.setStyleSheet("color: #8888a0; margin-top: 6px; line-height: 1.4;")
         text_layout.addWidget(self.desc_label)
         
         layout.addWidget(text_container)
         layout.addStretch()
+
+        # Step indicator dots
+        self.dots_layout = QHBoxLayout()
+        self.dots_layout.setAlignment(Qt.AlignCenter)
+        self.dots_layout.setSpacing(8)
+        self.dot_labels = []
+        for i in range(len(self.steps)):
+            dot = QLabel("●" if i == 0 else "○")
+            dot.setFont(QFont("Segoe UI", 10))
+            dot.setAlignment(Qt.AlignCenter)
+            dot.setFixedWidth(18)
+            self.dots_layout.addWidget(dot)
+            self.dot_labels.append(dot)
+        layout.addLayout(self.dots_layout)
         
         # Navigation buttons
         nav_layout = QHBoxLayout()
+        nav_layout.setSpacing(10)
         
         self.skip_btn = QPushButton(self.get_translation("skip"))
+        self.skip_btn.setObjectName("secondaryBtn")
         self.skip_btn.clicked.connect(self.reject)
         
         self.back_btn = QPushButton(self.get_translation("back"))
+        self.back_btn.setObjectName("secondaryBtn")
         self.back_btn.clicked.connect(self.prev_step)
         
         self.next_btn = QPushButton(self.get_translation("next"))
+        self.next_btn.setObjectName("primaryBtn")
         self.next_btn.clicked.connect(self.next_step)
-        self.next_btn.setStyleSheet("background-color: #0078d7; color: white; font-weight: bold; padding: 5px 15px;")
         
         nav_layout.addWidget(self.skip_btn)
         nav_layout.addStretch()
@@ -413,6 +437,15 @@ class TourDialog(QDialog):
             self.next_btn.setText(self.get_translation("finish"))
         else:
             self.next_btn.setText(self.get_translation("next"))
+        
+        # Update step indicator dots
+        for i, dot in enumerate(self.dot_labels):
+            if i == self.current_step:
+                dot.setText("●")
+                dot.setStyleSheet("color: #6366f1; font-size: 12pt;")
+            else:
+                dot.setText("○")
+                dot.setStyleSheet("color: #555570; font-size: 10pt;")
 
     def next_step(self):
         if self.current_step < len(self.steps) - 1:
@@ -688,16 +721,25 @@ class DownloadProgressDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Downloading Update")
-        self.setFixedSize(400, 150)
+        self.setFixedSize(450, 180)
         self.setModal(True)
         
         # Disable close button
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowCloseButtonHint)
         
         layout = QVBoxLayout()
+        layout.setContentsMargins(24, 24, 24, 20)
+        layout.setSpacing(14)
+        
+        title_label = QLabel("⬇️  Downloading Update...")
+        title_label.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        title_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title_label)
         
         self.status_label = QLabel("Initializing...")
+        self.status_label.setFont(QFont("Segoe UI", 9))
         self.status_label.setAlignment(Qt.AlignCenter)
+        self.status_label.setStyleSheet("color: #8888a0;")
         layout.addWidget(self.status_label)
         
         self.progress_bar = QProgressBar()
@@ -712,6 +754,641 @@ class DownloadProgressDialog(QDialog):
         self.status_label.setText(message)
 
 # -------------------------
+
+# =============================================
+# MODERN UI STYLESHEET SYSTEM
+# =============================================
+
+DARK_STYLESHEET = """
+/* ── Global ── */
+QMainWindow, QWidget {
+    background-color: #13141f;
+    color: #e0e0ee;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+}
+
+/* ── Menu Bar ── */
+QMenuBar {
+    background-color: #1a1b2e;
+    color: #c0c0d0;
+    border-bottom: 1px solid #2a2b3d;
+    padding: 2px 0px;
+    font-size: 10pt;
+}
+QMenuBar::item {
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin: 2px 1px;
+}
+QMenuBar::item:selected {
+    background-color: rgba(99, 102, 241, 0.25);
+    color: #a5b4fc;
+}
+QMenu {
+    background-color: #1e1f33;
+    color: #c0c0d0;
+    border: 1px solid #2a2b3d;
+    border-radius: 8px;
+    padding: 6px;
+}
+QMenu::item {
+    padding: 8px 28px 8px 16px;
+    border-radius: 6px;
+}
+QMenu::item:selected {
+    background-color: rgba(99, 102, 241, 0.3);
+    color: #c7d2fe;
+}
+QMenu::separator {
+    height: 1px;
+    background-color: #2a2b3d;
+    margin: 4px 10px;
+}
+
+/* ── Toolbar Panel ── */
+QFrame#toolbarFrame {
+    background-color: #1a1b2e;
+    border: 1px solid #2a2b3d;
+    border-radius: 12px;
+    padding: 6px 12px;
+    margin: 6px;
+}
+QFrame#bottomBarFrame {
+    background-color: #1a1b2e;
+    border: 1px solid #2a2b3d;
+    border-radius: 12px;
+    padding: 6px 12px;
+    margin: 6px;
+}
+
+/* ── Primary Action Buttons ── */
+QPushButton#primaryBtn {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #6366f1, stop:1 #8b5cf6);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: bold;
+    font-size: 10pt;
+    min-height: 20px;
+}
+QPushButton#primaryBtn:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #7c7ff7, stop:1 #a78bfa);
+}
+QPushButton#primaryBtn:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #4f46e5, stop:1 #7c3aed);
+    padding: 11px 22px 9px 22px;
+}
+QPushButton#primaryBtn:disabled {
+    background-color: #2a2b3d;
+    color: #555;
+}
+
+/* ── Secondary Action Buttons ── */
+QPushButton#secondaryBtn {
+    background-color: rgba(42, 43, 61, 0.8);
+    color: #c0c0d0;
+    border: 1px solid #3a3b5d;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 10pt;
+    min-height: 20px;
+}
+QPushButton#secondaryBtn:hover {
+    background-color: rgba(99, 102, 241, 0.18);
+    border-color: #6366f1;
+    color: #a5b4fc;
+}
+QPushButton#secondaryBtn:pressed {
+    background-color: rgba(99, 102, 241, 0.30);
+    padding: 11px 18px 9px 18px;
+}
+
+/* ── Utility Buttons (Zoom, Theme) ── */
+QPushButton#utilBtn {
+    background-color: transparent;
+    color: #8888a0;
+    border: 1px solid #2a2b3d;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 9pt;
+}
+QPushButton#utilBtn:hover {
+    background-color: rgba(99, 102, 241, 0.12);
+    border-color: #4a4b6d;
+    color: #a5b4fc;
+}
+QPushButton#utilBtn:pressed {
+    background-color: rgba(99, 102, 241, 0.22);
+}
+
+/* ── ComboBox ── */
+QComboBox {
+    background-color: #1e1f33;
+    color: #c0c0d0;
+    border: 1px solid #3a3b5d;
+    border-radius: 8px;
+    padding: 7px 12px;
+    min-width: 120px;
+    font-size: 10pt;
+}
+QComboBox:hover {
+    border-color: #6366f1;
+}
+QComboBox:focus {
+    border-color: #8b5cf6;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 28px;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #8888a0;
+    margin-right: 8px;
+}
+QComboBox QAbstractItemView {
+    background-color: #1e1f33;
+    color: #c0c0d0;
+    border: 1px solid #3a3b5d;
+    border-radius: 8px;
+    padding: 4px;
+    selection-background-color: rgba(99, 102, 241, 0.3);
+    selection-color: #c7d2fe;
+    outline: none;
+}
+
+/* ── SpinBox ── */
+QSpinBox {
+    background-color: #1e1f33;
+    color: #c0c0d0;
+    border: 1px solid #3a3b5d;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 10pt;
+}
+QSpinBox:hover {
+    border-color: #6366f1;
+}
+QSpinBox::up-button, QSpinBox::down-button {
+    background-color: #2a2b3d;
+    border: none;
+    width: 20px;
+    border-radius: 4px;
+}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ── Progress Bar ── */
+QProgressBar {
+    background-color: #1e1f33;
+    border: 1px solid #2a2b3d;
+    border-radius: 10px;
+    text-align: center;
+    color: #c0c0d0;
+    font-weight: bold;
+    min-height: 22px;
+    margin: 4px 6px;
+}
+QProgressBar::chunk {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #6366f1, stop:0.5 #8b5cf6, stop:1 #a78bfa);
+    border-radius: 9px;
+}
+
+/* ── Scroll Area ── */
+QScrollArea {
+    background-color: #0f1019;
+    border: 1px solid #2a2b3d;
+    border-radius: 12px;
+}
+
+/* ── Scrollbar ── */
+QScrollBar:vertical {
+    background-color: transparent;
+    width: 10px;
+    margin: 4px 2px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    background-color: #3a3b5d;
+    border-radius: 5px;
+    min-height: 30px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: #6366f1;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar:horizontal {
+    background-color: transparent;
+    height: 10px;
+    margin: 2px 4px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal {
+    background-color: #3a3b5d;
+    border-radius: 5px;
+    min-width: 30px;
+}
+QScrollBar::handle:horizontal:hover {
+    background-color: #6366f1;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* ── Labels ── */
+QLabel {
+    color: #c0c0d0;
+    font-size: 10pt;
+}
+QLabel#sectionLabel {
+    color: #8888a0;
+    font-size: 9pt;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+QLabel#dropZoneLabel {
+    color: #555570;
+    font-size: 12pt;
+    font-weight: bold;
+    border: 2px dashed #2a2b3d;
+    border-radius: 12px;
+    background-color: #0f1019;
+}
+
+/* ── Separator Line ── */
+QFrame#separator {
+    background-color: #2a2b3d;
+    max-width: 1px;
+    margin: 4px 8px;
+}
+
+/* ── Dialogs ── */
+QDialog {
+    background-color: #1a1b2e;
+    color: #e0e0ee;
+    border-radius: 12px;
+}
+QDialog QLabel {
+    color: #c0c0d0;
+}
+
+/* ── Message Box ── */
+QMessageBox {
+    background-color: #1a1b2e;
+    color: #e0e0ee;
+}
+QMessageBox QPushButton {
+    background-color: #2a2b3d;
+    color: #c0c0d0;
+    border: 1px solid #3a3b5d;
+    border-radius: 8px;
+    padding: 8px 20px;
+    min-width: 80px;
+}
+QMessageBox QPushButton:hover {
+    background-color: rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+}
+
+/* ── Tooltip ── */
+QToolTip {
+    background-color: #1e1f33;
+    color: #c0c0d0;
+    border: 1px solid #3a3b5d;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 9pt;
+}
+"""
+
+LIGHT_STYLESHEET = """
+/* ── Global ── */
+QMainWindow, QWidget {
+    background-color: #f4f5fa;
+    color: #1e1e2e;
+    font-family: "Segoe UI", "Arial", sans-serif;
+    font-size: 10pt;
+}
+
+/* ── Menu Bar ── */
+QMenuBar {
+    background-color: #ffffff;
+    color: #333355;
+    border-bottom: 1px solid #e0e1ec;
+    padding: 2px 0px;
+    font-size: 10pt;
+}
+QMenuBar::item {
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin: 2px 1px;
+}
+QMenuBar::item:selected {
+    background-color: rgba(99, 102, 241, 0.12);
+    color: #4f46e5;
+}
+QMenu {
+    background-color: #ffffff;
+    color: #333355;
+    border: 1px solid #e0e1ec;
+    border-radius: 8px;
+    padding: 6px;
+}
+QMenu::item {
+    padding: 8px 28px 8px 16px;
+    border-radius: 6px;
+}
+QMenu::item:selected {
+    background-color: rgba(99, 102, 241, 0.12);
+    color: #4f46e5;
+}
+QMenu::separator {
+    height: 1px;
+    background-color: #e0e1ec;
+    margin: 4px 10px;
+}
+
+/* ── Toolbar Panel ── */
+QFrame#toolbarFrame {
+    background-color: #ffffff;
+    border: 1px solid #e0e1ec;
+    border-radius: 12px;
+    padding: 6px 12px;
+    margin: 6px;
+}
+QFrame#bottomBarFrame {
+    background-color: #ffffff;
+    border: 1px solid #e0e1ec;
+    border-radius: 12px;
+    padding: 6px 12px;
+    margin: 6px;
+}
+
+/* ── Primary Action Buttons ── */
+QPushButton#primaryBtn {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #6366f1, stop:1 #8b5cf6);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-weight: bold;
+    font-size: 10pt;
+    min-height: 20px;
+}
+QPushButton#primaryBtn:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #7c7ff7, stop:1 #a78bfa);
+}
+QPushButton#primaryBtn:pressed {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #4f46e5, stop:1 #7c3aed);
+    padding: 11px 22px 9px 22px;
+}
+QPushButton#primaryBtn:disabled {
+    background-color: #d0d0dd;
+    color: #999;
+}
+
+/* ── Secondary Action Buttons ── */
+QPushButton#secondaryBtn {
+    background-color: #ffffff;
+    color: #333355;
+    border: 1px solid #d0d1e0;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 10pt;
+    min-height: 20px;
+}
+QPushButton#secondaryBtn:hover {
+    background-color: rgba(99, 102, 241, 0.08);
+    border-color: #6366f1;
+    color: #4f46e5;
+}
+QPushButton#secondaryBtn:pressed {
+    background-color: rgba(99, 102, 241, 0.16);
+    padding: 11px 18px 9px 18px;
+}
+
+/* ── Utility Buttons (Zoom, Theme) ── */
+QPushButton#utilBtn {
+    background-color: transparent;
+    color: #666688;
+    border: 1px solid #d0d1e0;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 9pt;
+}
+QPushButton#utilBtn:hover {
+    background-color: rgba(99, 102, 241, 0.08);
+    border-color: #6366f1;
+    color: #4f46e5;
+}
+QPushButton#utilBtn:pressed {
+    background-color: rgba(99, 102, 241, 0.16);
+}
+
+/* ── ComboBox ── */
+QComboBox {
+    background-color: #ffffff;
+    color: #333355;
+    border: 1px solid #d0d1e0;
+    border-radius: 8px;
+    padding: 7px 12px;
+    min-width: 120px;
+    font-size: 10pt;
+}
+QComboBox:hover {
+    border-color: #6366f1;
+}
+QComboBox:focus {
+    border-color: #8b5cf6;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 28px;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #666688;
+    margin-right: 8px;
+}
+QComboBox QAbstractItemView {
+    background-color: #ffffff;
+    color: #333355;
+    border: 1px solid #d0d1e0;
+    border-radius: 8px;
+    padding: 4px;
+    selection-background-color: rgba(99, 102, 241, 0.15);
+    selection-color: #4f46e5;
+    outline: none;
+}
+
+/* ── SpinBox ── */
+QSpinBox {
+    background-color: #ffffff;
+    color: #333355;
+    border: 1px solid #d0d1e0;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 10pt;
+}
+QSpinBox:hover {
+    border-color: #6366f1;
+}
+QSpinBox::up-button, QSpinBox::down-button {
+    background-color: #f0f0f8;
+    border: none;
+    width: 20px;
+    border-radius: 4px;
+}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: rgba(99, 102, 241, 0.15);
+}
+
+/* ── Progress Bar ── */
+QProgressBar {
+    background-color: #e8e9f4;
+    border: 1px solid #d0d1e0;
+    border-radius: 10px;
+    text-align: center;
+    color: #333355;
+    font-weight: bold;
+    min-height: 22px;
+    margin: 4px 6px;
+}
+QProgressBar::chunk {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 #6366f1, stop:0.5 #8b5cf6, stop:1 #a78bfa);
+    border-radius: 9px;
+}
+
+/* ── Scroll Area ── */
+QScrollArea {
+    background-color: #ecedf6;
+    border: 1px solid #d0d1e0;
+    border-radius: 12px;
+}
+
+/* ── Scrollbar ── */
+QScrollBar:vertical {
+    background-color: transparent;
+    width: 10px;
+    margin: 4px 2px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    background-color: #c0c1d0;
+    border-radius: 5px;
+    min-height: 30px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: #6366f1;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar:horizontal {
+    background-color: transparent;
+    height: 10px;
+    margin: 2px 4px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal {
+    background-color: #c0c1d0;
+    border-radius: 5px;
+    min-width: 30px;
+}
+QScrollBar::handle:horizontal:hover {
+    background-color: #6366f1;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* ── Labels ── */
+QLabel {
+    color: #333355;
+    font-size: 10pt;
+}
+QLabel#sectionLabel {
+    color: #666688;
+    font-size: 9pt;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+QLabel#dropZoneLabel {
+    color: #9999bb;
+    font-size: 12pt;
+    font-weight: bold;
+    border: 2px dashed #c0c1d0;
+    border-radius: 12px;
+    background-color: #ecedf6;
+}
+
+/* ── Separator Line ── */
+QFrame#separator {
+    background-color: #d0d1e0;
+    max-width: 1px;
+    margin: 4px 8px;
+}
+
+/* ── Dialogs ── */
+QDialog {
+    background-color: #ffffff;
+    color: #1e1e2e;
+    border-radius: 12px;
+}
+QDialog QLabel {
+    color: #333355;
+}
+
+/* ── Message Box ── */
+QMessageBox {
+    background-color: #ffffff;
+    color: #1e1e2e;
+}
+QMessageBox QPushButton {
+    background-color: #f0f0f8;
+    color: #333355;
+    border: 1px solid #d0d1e0;
+    border-radius: 8px;
+    padding: 8px 20px;
+    min-width: 80px;
+}
+QMessageBox QPushButton:hover {
+    background-color: rgba(99, 102, 241, 0.12);
+    border-color: #6366f1;
+}
+
+/* ── Tooltip ── */
+QToolTip {
+    background-color: #ffffff;
+    color: #333355;
+    border: 1px solid #d0d1e0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 9pt;
+}
+"""
+
+# =============================================
+# END MODERN UI STYLESHEET SYSTEM
+# =============================================
+
 
 class BackgroundRemoverApp(QMainWindow):
     def __init__(self):
@@ -729,7 +1406,7 @@ class BackgroundRemoverApp(QMainWindow):
         self.image_np = None
         self.result_np = None
         self.original_image_np = None
-        self.is_dark = False
+        self.is_dark = True
         self.undo_stack = []
         self.redo_stack = []
         self.drag_pos = None
@@ -764,14 +1441,14 @@ class BackgroundRemoverApp(QMainWindow):
         help_menu.addAction("Software Tour", self.show_tour)
         help_menu.addAction("Feedback / Report Bug", self.show_feedback_dialog)
         help_menu.addAction("About", self.show_about)
-        self.left_image_label = QLabel("Processed Image")
+        self.left_image_label = QLabel("✨  Processed Image")
+        self.left_image_label.setObjectName("dropZoneLabel")
         self.left_image_label.setAlignment(Qt.AlignCenter)
-        self.left_image_label.setStyleSheet("border: 2px dashed #ccc; color: #333;")
         self.left_image_label.setAcceptDrops(True)
         
-        self.right_image_label = QLabel("Original Image (Drop or Load Image here)")
+        self.right_image_label = QLabel("📂  Drop or Browse an Image")
+        self.right_image_label.setObjectName("dropZoneLabel")
         self.right_image_label.setAlignment(Qt.AlignCenter)
-        self.right_image_label.setStyleSheet("border: 2px dashed #ccc; color: #333;")
         
         self.left_scroll_area = QScrollArea()
         self.left_scroll_area.setWidgetResizable(True)
@@ -815,59 +1492,140 @@ class BackgroundRemoverApp(QMainWindow):
         images_layout.addWidget(self.right_scroll_area)
         images_layout.addWidget(self.left_scroll_area)
         
-        font = QFont("Arial", 10, QFont.Bold)
+        font = QFont("Segoe UI", 10)
+        font_bold = QFont("Segoe UI", 10, QFont.Bold)
+
         self.language_select = QComboBox()
         self.language_select.addItems(LANGUAGES.keys())
         self.language_select.setCurrentText("English")
         self.language_select.currentTextChanged.connect(self.update_language)
+
         self.model_label = QLabel()
+        self.model_label.setObjectName("sectionLabel")
         self.model_select = QComboBox()
         self.model_select.addItems(MODELS.keys())
+
         self.feather_label = QLabel()
+        self.feather_label.setObjectName("sectionLabel")
         self.feather_spinbox = QSpinBox()
         self.feather_spinbox.setMinimum(0)
         self.feather_spinbox.setMaximum(10)
         self.feather_spinbox.setValue(2)
-        self.feather_spinbox.setFixedWidth(50)
+        self.feather_spinbox.setFixedWidth(70)
+
         self.language_label = QLabel()
+        self.language_label.setObjectName("sectionLabel")
+
         self.progress = QProgressBar()
         self.progress.setVisible(False)
-        self.browse_btn = self.create_icon_button("", "browse.png", self.load_image, font)
-        self.remove_btn = self.create_icon_button("", "remove.png", self.remove_background, font)
-        self.undo_btn = self.create_icon_button("", "undo.png", self.undo, font)
-        self.redo_btn = self.create_icon_button("", "redo.png", self.redo, font)
-        self.save_btn = self.create_icon_button("", "save.png", self.save_image, font)
-        self.zoom_in_btn = self.create_icon_button("", "zoom_in.png", self.zoom_in, font)
-        self.zoom_out_btn = self.create_icon_button("", "zoom_out.png", self.zoom_out, font)
-        self.theme_btn = self.create_icon_button("", "theme.png", self.toggle_theme, font)
+
+        # --- Create Buttons with CSS Object Names ---
+        self.browse_btn = self.create_icon_button("", "browse.png", self.load_image, font_bold, "primaryBtn")
+        self.remove_btn = self.create_icon_button("", "remove.png", self.remove_background, font_bold, "primaryBtn")
+        self.undo_btn = self.create_icon_button("", "undo.png", self.undo, font, "secondaryBtn")
+        self.redo_btn = self.create_icon_button("", "redo.png", self.redo, font, "secondaryBtn")
+        self.save_btn = self.create_icon_button("", "save.png", self.save_image, font_bold, "primaryBtn")
+        self.zoom_in_btn = self.create_icon_button("", "zoom_in.png", self.zoom_in, font, "utilBtn")
+        self.zoom_out_btn = self.create_icon_button("", "zoom_out.png", self.zoom_out, font, "utilBtn")
+        self.theme_btn = self.create_icon_button("", "theme.png", self.toggle_theme, font, "utilBtn")
+
         self.update_ui_texts()
-        top_layout = QHBoxLayout()
+
+        # --- Top Toolbar in a styled QFrame ---
+        toolbar_frame = QFrame()
+        toolbar_frame.setObjectName("toolbarFrame")
+        top_layout = QHBoxLayout(toolbar_frame)
+        top_layout.setContentsMargins(8, 4, 8, 4)
+        top_layout.setSpacing(6)
+
+        # Left group: View controls
         top_layout.addWidget(self.zoom_in_btn)
         top_layout.addWidget(self.zoom_out_btn)
         top_layout.addWidget(self.theme_btn)
+
+        # Separator
+        sep1 = QFrame()
+        sep1.setObjectName("separator")
+        sep1.setFrameShape(QFrame.VLine)
+        sep1.setFixedWidth(2)
+        sep1.setFixedHeight(28)
+        top_layout.addWidget(sep1)
+
         top_layout.addStretch()
+
+        # Center group: Model & Feather
         top_layout.addWidget(self.model_label)
         top_layout.addWidget(self.model_select)
+
+        sep2 = QFrame()
+        sep2.setObjectName("separator")
+        sep2.setFrameShape(QFrame.VLine)
+        sep2.setFixedWidth(2)
+        sep2.setFixedHeight(28)
+        top_layout.addWidget(sep2)
+
         top_layout.addWidget(self.feather_label)
         top_layout.addWidget(self.feather_spinbox)
+
+        top_layout.addStretch()
+
+        # Right group: Language
+        sep3 = QFrame()
+        sep3.setObjectName("separator")
+        sep3.setFrameShape(QFrame.VLine)
+        sep3.setFixedWidth(2)
+        sep3.setFixedHeight(28)
+        top_layout.addWidget(sep3)
+
         top_layout.addWidget(self.language_label)
         top_layout.addWidget(self.language_select)
-        bottom_layout = QHBoxLayout()
+
+        # --- Bottom Action Bar in a styled QFrame ---
+        bottom_frame = QFrame()
+        bottom_frame.setObjectName("bottomBarFrame")
+        bottom_layout = QHBoxLayout(bottom_frame)
+        bottom_layout.setContentsMargins(8, 4, 8, 4)
+        bottom_layout.setSpacing(10)
+
         bottom_layout.addStretch()
         bottom_layout.addWidget(self.browse_btn)
         bottom_layout.addWidget(self.remove_btn)
+
+        sep4 = QFrame()
+        sep4.setObjectName("separator")
+        sep4.setFrameShape(QFrame.VLine)
+        sep4.setFixedWidth(2)
+        sep4.setFixedHeight(28)
+        bottom_layout.addWidget(sep4)
+
         bottom_layout.addWidget(self.undo_btn)
         bottom_layout.addWidget(self.redo_btn)
+
+        sep5 = QFrame()
+        sep5.setObjectName("separator")
+        sep5.setFrameShape(QFrame.VLine)
+        sep5.setFixedWidth(2)
+        sep5.setFixedHeight(28)
+        bottom_layout.addWidget(sep5)
+
         bottom_layout.addWidget(self.save_btn)
         bottom_layout.addStretch()
+
+        # --- Main Layout ---
         main_layout = QVBoxLayout()
-        main_layout.addLayout(top_layout)
+        main_layout.setContentsMargins(6, 6, 6, 6)
+        main_layout.setSpacing(4)
+        main_layout.addWidget(toolbar_frame)
         main_layout.addLayout(images_layout, 10)
-        main_layout.addLayout(bottom_layout)
+        main_layout.addWidget(bottom_frame)
         main_layout.addWidget(self.progress)
+
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
+
+        # --- Apply default theme ---
+        self.setStyleSheet(DARK_STYLESHEET)
         self.left_image_label.installEventFilter(self)
         self.left_image_label.mousePressEvent = self.start_drag
         self.left_image_label.mouseMoveEvent = self.drag_image
@@ -954,15 +1712,49 @@ class BackgroundRemoverApp(QMainWindow):
         QMessageBox.warning(self, "Update Failed", f"Failed to download update:\n{error_msg}")
 
     def show_about(self):
-        QMessageBox.information(
-            self, "About",
-            f"<b>AI Background Remover</b><br>"
-            f"Version: {APP_VERSION}<br><br>"
-            f"Developed by <b>{AppConfig.COMPANY_NAME}</b><br>"
-            f"© 2025 All Rights Reserved.<br><br>"
-            f"This software uses advanced AI models (U²Net, MODNet, IS-Net, BiRefNet, etc.) "
-            f"for background removal."
+        dialog = QDialog(self)
+        dialog.setWindowTitle("About BG Remover")
+        dialog.setFixedSize(420, 280)
+        
+        layout = QVBoxLayout()
+        layout.setContentsMargins(24, 24, 24, 20)
+        layout.setSpacing(12)
+        
+        title = QLabel("🎨 AI Background Remover")
+        title.setFont(QFont("Segoe UI", 16, QFont.Bold))
+        title.setAlignment(Qt.AlignCenter)
+        title.setStyleSheet("color: #a5b4fc;")
+        layout.addWidget(title)
+        
+        version = QLabel(f"Version {APP_VERSION}")
+        version.setFont(QFont("Segoe UI", 10))
+        version.setAlignment(Qt.AlignCenter)
+        version.setStyleSheet("color: #8888a0;")
+        layout.addWidget(version)
+        
+        layout.addSpacing(8)
+        
+        info = QLabel(
+            f"<p style='text-align: center;'>Developed by <b>{AppConfig.COMPANY_NAME}</b><br>"
+            f"© 2025 All Rights Reserved.</p>"
+            f"<p style='text-align: center; color: #8888a0;'>Powered by advanced AI models:<br>"
+            f"U²Net · MODNet · IS-Net · BASNet · BiRefNet</p>"
         )
+        info.setFont(QFont("Segoe UI", 10))
+        info.setWordWrap(True)
+        info.setTextFormat(Qt.RichText)
+        info.setAlignment(Qt.AlignCenter)
+        layout.addWidget(info)
+        
+        layout.addStretch()
+        
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("secondaryBtn")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn, alignment=Qt.AlignCenter)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
 
     def manual_update(self):
         if not has_updater:
@@ -1019,48 +1811,57 @@ class BackgroundRemoverApp(QMainWindow):
     def show_feedback_dialog(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Feedback / Report Bug")
-        dialog.setFixedWidth(400)
+        dialog.setFixedWidth(440)
         
         layout = QVBoxLayout()
+        layout.setContentsMargins(24, 24, 24, 20)
+        layout.setSpacing(16)
         
         info_label = QLabel(
-            "<h3>Found a bug or have feedback?</h3>"
+            "<h3 style='color: #a5b4fc;'>💬 Found a bug or have feedback?</h3>"
             "<p>We appreciate your feedback! If you are experiencing issues or have suggestions, please email us directly.</p>"
-            "<p><b>Email:</b> <a href='mailto:meeranrashith166@gmail.com'>meeranrashith166@gmail.com</a></p>"
+            "<p><b>Email:</b> <a href='mailto:meeranrashith166@gmail.com' style='color: #8b5cf6;'>meeranrashith166@gmail.com</a></p>"
             "<br>"
             "<i>Your feedback helps us make BG Remover better!</i>"
         )
         info_label.setWordWrap(True)
         info_label.setTextFormat(Qt.RichText)
         info_label.setOpenExternalLinks(True)
+        info_label.setFont(QFont("Segoe UI", 10))
         layout.addWidget(info_label)
         
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
         
-        email_btn = QPushButton("Send Feedback via Email")
-        email_btn.setStyleSheet("background-color: #0078d7; color: white; font-weight: bold;")
+        email_btn = QPushButton("✉  Send Feedback via Email")
+        email_btn.setObjectName("primaryBtn")
+        email_btn.setFont(QFont("Segoe UI", 10, QFont.Bold))
         email_btn.clicked.connect(lambda: webbrowser.open("mailto:meeranrashith166@gmail.com?subject=BG Remover Feedback"))
         
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("secondaryBtn")
+        close_btn.setFont(QFont("Segoe UI", 10))
+        close_btn.clicked.connect(dialog.accept)
+        
         btn_layout.addWidget(email_btn)
+        btn_layout.addWidget(close_btn)
         
         layout.addLayout(btn_layout)
-        
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(dialog.accept)
-        layout.addWidget(close_btn)
         
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def create_icon_button(self, text, icon_file, callback, font):
-        # ... (function is unchanged)
+    def create_icon_button(self, text, icon_file, callback, font, object_name=None):
         btn = QPushButton(text)
         icon_path = os.path.join(ASSETS_DIR, icon_file)
         if os.path.exists(icon_path):
             btn.setIcon(QIcon(icon_path))
+            from PyQt5.QtCore import QSize
+            btn.setIconSize(QSize(24, 24))
         btn.setFont(font)
         btn.clicked.connect(callback)
-        btn.setStyleSheet("padding: 8px;")
+        if object_name:
+            btn.setObjectName(object_name)
         return btn
 
     def get_translation(self, key):
@@ -1098,8 +1899,8 @@ class BackgroundRemoverApp(QMainWindow):
         self.redo_stack.clear()
         self.left_image_label.clear()
         self.right_image_label.clear()
-        self.left_image_label.setText("Processed Image ")
-        self.right_image_label.setText("Original Image (Drop or Load Image here)")
+        self.left_image_label.setText("✨  Processed Image")
+        self.right_image_label.setText("📂  Drop or Browse an Image")
         self.left_image_label.resize(self.left_scroll_area.size())
         self.right_image_label.resize(self.right_scroll_area.size())
         
@@ -1318,60 +2119,11 @@ class BackgroundRemoverApp(QMainWindow):
     def zoom_out(self): self.zoom_factor /= 1.25; self.update_image_display()
     
     def toggle_theme(self):
-        # ... (function is unchanged)
-        dark_stylesheet = """
-        QMainWindow, QWidget {
-            background-color: #333;
-            color: #ccc;
-        }
-        QMenuBar, QMenu {
-            background-color: #444;
-            color: #ccc;
-        }
-        QMenuBar::item:selected, QMenu::item:selected {
-            background-color: #555;
-        }
-        QPushButton {
-            background-color: #555;
-            color: #ccc;
-            border: 1px solid #666;
-            padding: 8px;
-        }
-        QPushButton:hover {
-            background-color: #666;
-        }
-        QComboBox {
-            background-color: #555;
-            color: #ccc;
-            border: 1px solid #666;
-        }
-        QSpinBox {
-            background-color: #555;
-            color: #ccc;
-            border: 1px solid #666;
-        }
-        QProgressBar {
-            color: #ccc;
-            border: 1px solid #666;
-            text-align: center;
-        }
-        QProgressBar::chunk {
-            background-color: #0078d7;
-        }
-        QScrollArea {
-            background-color: #2a2a2a;
-            border: none;
-        }
-        """
         if self.is_dark:
-            self.setStyleSheet("")
-            self.left_image_label.setStyleSheet("border: 2px dashed #ccc; color: #333;")
-            self.right_image_label.setStyleSheet("border: 2px dashed #ccc; color: #333;")
+            self.setStyleSheet(LIGHT_STYLESHEET)
             self.is_dark = False
         else:
-            self.setStyleSheet(dark_stylesheet)
-            self.left_image_label.setStyleSheet("border: 2px dashed #777; color: #aaa; background-color: #2a2a2a;")
-            self.right_image_label.setStyleSheet("border: 2px dashed #777; color: #aaa; background-color: #2a2a2a;")
+            self.setStyleSheet(DARK_STYLESHEET)
             self.is_dark = True
             
     def start_drag(self, event):
