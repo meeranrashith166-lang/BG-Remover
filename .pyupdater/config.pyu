@@ -34,79 +34,16 @@
       "BGRemover": {
         "1.0.0.2.0": {
           "win": {
-            "file_hash": "3643a8b3a2a68c8da73cd2de52a253a76263d1d726a8360287856725b09d7605",
-            "file_size": 3555585590,
+            "file_hash": "13196fda5bd42d04a51c1a1063152aa4b26911122798346cdfbfd5dc50f031ab",
+            "file_size": 349802953,
             "filename": "BGRemover-win-1.0.0.zip"
           }
         },
-        "1.0.1.2.0": {
+        "3.0.1.2.0": {
           "win": {
-            "file_hash": "760dfefb963dbebf01a82d27f6f9404aa7678f578d5f50c6c8f4cc897dc1fb8b",
-            "file_size": 3555586145,
-            "filename": "BGRemover-win-1.0.1.zip"
-          }
-        },
-        "1.1.0.2.0": {
-          "win": {
-            "file_hash": "bbb94815cdc2dcef30d97b3c78c93bdeb04097d4806972da8b5dda6365112087",
-            "file_size": 3767095630,
-            "filename": "BGRemover-win-1.1.zip"
-          }
-        },
-        "1.2.0.2.0": {
-          "win": {
-            "file_hash": "a75ba354e4f4a163e6d0a4d7d716708c4a54d5eaa6b57a7edbcbdc7d4ba79495",
-            "file_size": 5691388503,
-            "filename": "BGRemover-win-1.2.zip"
-          }
-        },
-        "1.5.0.2.0": {
-          "win": {
-            "file_hash": "f5c6952698646c394c28808385a7792e9f60131a7a71a76e85e2be03194d22ae",
-            "file_size": 3987102018,
-            "filename": "BGRemover-win-1.5.0.2.0.zip"
-          }
-        },
-        "1.3.0.2.0": {
-          "win": {
-            "file_hash": "cb5e1498ec9fd14d348b813670894c8f1e5be4f92b5df35faefd6776a26a5b7d",
-            "file_size": 3987186402,
-            "filename": "BGRemover-win-1.3.zip"
-          }
-        },
-        "2.0.0.2.0": {
-          "win": {
-            "file_hash": "cb5e1498ec9fd14d348b813670894c8f1e5be4f92b5df35faefd6776a26a5b7d",
-            "file_size": 3987186402,
-            "filename": "BGRemover-win-2.0.0.zip"
-          }
-        },
-        "2.1.0.2.0": {
-          "win": {
-            "file_hash": "fbbf892c753ee0d39326b48eb22f104a69f2f6ae7cf6fafdd4965221bffbd2d0",
-            "file_size": 3987285361,
-            "filename": "BGRemover-win-2.1.0.zip"
-          }
-        },
-        "2.2.0.2.0": {
-          "win": {
-            "file_hash": "7afe3350d52a668fff63d271fbc411198b9fe644505f4d51b150dd5682893899",
-            "file_size": 3987460998,
-            "filename": "BGRemover-win-2.2.0.2.0.zip"
-          }
-        },
-        "2.3.0": {
-          "win": {
-            "filename": "BGRemover-win-2.3.0.zip",
-            "file_hash": "ab3a4f215e381bfbd8d08c18f8a7ea07ca6f55b022f98b6387692c71b9a5a530",
-            "file_size": 3987461280
-          }
-        },
-        "2.3.0.2.0": {
-          "win": {
-            "file_hash": "ab3a4f215e381bfbd8d08c18f8a7ea07ca6f55b022f98b6387692c71b9a5a530",
-            "file_size": 3987461280,
-            "filename": "BGRemover-win-2.3.0.zip"
+            "file_hash": "0dd4507661346d834f54e64aab0638b21fa1bd3bc28f8d576222cb5410ca6fe2",
+            "file_size": 349802921,
+            "filename": "BGRemover-win-3.0.1.zip"
           }
         }
       }
@@ -114,7 +51,7 @@
     "latest": {
       "BGRemover": {
         "stable": {
-          "win": "2.3.0.2.0"
+          "win": "3.0.1.2.0"
         }
       }
     }
@@ -123,7 +60,7 @@
     "patches": {},
     "package": {
       "BGRemover": {
-        "win": "2.3.0.2.0"
+        "win": "3.0.1.2.0"
       }
     }
   }

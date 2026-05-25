@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "BG Remover"
-#define MyAppVersion "2.3.0"
+#define MyAppVersion "3.0.1"
 #define MyAppPublisher "Meeran Rashith"
 #define MyAppExeName "BGRemover.exe"
 
@@ -41,7 +41,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; IMPORTANT: Update the path below to point to your build output directory (dist/app or dist/BGRemover)
-Source: "dist\BGRemover\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\win\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

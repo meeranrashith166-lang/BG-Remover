@@ -73,15 +73,14 @@ from PIL import Image
 import onnxruntime as ort
 from rembg import remove as rembg_remove, new_session
 
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QVBoxLayout,
     QWidget, QHBoxLayout, QSlider, QComboBox, QProgressBar, QScrollArea, QMessageBox, QSpinBox,
-    QDialog
+    QDialog, QFrame
 )
 import gc
-from PyQt5.QtGui import QPixmap, QImage, QIcon, QFont, QKeySequence
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QEvent, QTimer, QSettings
-from PyQt5.QtWidgets import QShortcut, QFrame
+from PySide6.QtGui import QPixmap, QImage, QIcon, QFont, QKeySequence, QShortcut
+from PySide6.QtCore import Qt, QThread, Signal as pyqtSignal, QEvent, QTimer, QSettings
 # moved up
 import math
 import threading
@@ -123,6 +122,12 @@ try:
 except ImportError:
     has_updater = False
 
+try:
+    import ben2
+    has_ben2 = True
+except ImportError:
+    has_ben2 = False
+
 
 
 def resource_path(relative_path):
@@ -146,7 +151,7 @@ def resource_path(relative_path):
     # 3. Development mode
     base_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_path, relative_path)
-APP_VERSION = "2.3.0"# --- MODEL PATH CONFIGURATION ---
+APP_VERSION = "3.0.1" # --- MODEL PATH CONFIGURATION ---
 # We use LOCALAPPDATA for writable model cache to avoid Administrator requirement
 USER_DATA_DIR = os.path.join(os.getenv('LOCALAPPDATA'), 'BG Remover')
 os.makedirs(USER_DATA_DIR, exist_ok=True)
@@ -196,18 +201,118 @@ except ImportError:
 
 
 ASSETS_DIR = resource_path("assets")
+
+def create_arrow_assets():
+    try:
+        os.makedirs(ASSETS_DIR, exist_ok=True)
+        # Down arrows
+        down_dark = os.path.join(ASSETS_DIR, "down_arrow_dark.png")
+        if not os.path.exists(down_dark):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            from PIL import ImageDraw
+            draw = ImageDraw.Draw(img)
+            draw.polygon([(4, 6), (12, 6), (8, 11)], fill=(136, 136, 160, 255))
+            img.save(down_dark)
+
+        down_light = os.path.join(ASSETS_DIR, "down_arrow_light.png")
+        if not os.path.exists(down_light):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            from PIL import ImageDraw
+            draw = ImageDraw.Draw(img)
+            draw.polygon([(4, 6), (12, 6), (8, 11)], fill=(102, 102, 136, 255))
+            img.save(down_light)
+
+        # Up arrows
+        up_dark = os.path.join(ASSETS_DIR, "up_arrow_dark.png")
+        if not os.path.exists(up_dark):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            from PIL import ImageDraw
+            draw = ImageDraw.Draw(img)
+            draw.polygon([(4, 11), (12, 11), (8, 6)], fill=(136, 136, 160, 255))
+            img.save(up_dark)
+
+        up_light = os.path.join(ASSETS_DIR, "up_arrow_light.png")
+        if not os.path.exists(up_light):
+            img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+            from PIL import ImageDraw
+            draw = ImageDraw.Draw(img)
+            draw.polygon([(4, 11), (12, 11), (8, 6)], fill=(102, 102, 136, 255))
+            img.save(up_light)
+    except Exception as e:
+        print(f"Error creating arrow assets: {e}")
+
+create_arrow_assets()
+
+down_arrow_dark_path = os.path.join(ASSETS_DIR, "down_arrow_dark.png").replace("\\", "/")
+down_arrow_light_path = os.path.join(ASSETS_DIR, "down_arrow_light.png").replace("\\", "/")
+up_arrow_dark_path = os.path.join(ASSETS_DIR, "up_arrow_dark.png").replace("\\", "/")
+up_arrow_light_path = os.path.join(ASSETS_DIR, "up_arrow_light.png").replace("\\", "/")
+
 def get_model_path(relative_path):
-    """Checks the writable cache first, then the bundle."""
-    cache_path = os.path.join(MODEL_CACHE_DIR, relative_path.replace("models/", ""))
-    if os.path.exists(cache_path):
-        return cache_path
-    return resource_path(relative_path)
+    """Always returns the writable cache path for a model file.
+    Models are downloaded on-demand if not present."""
+    filename = relative_path.replace("models/", "")
+    return os.path.join(MODEL_CACHE_DIR, filename)
+
+# --- MODEL DOWNLOAD URLS (Hugging Face) ---
+# Models are downloaded on first use and cached permanently in LOCALAPPDATA
+MODEL_DOWNLOAD_URLS = {
+    "u2net.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/u2net.onnx",
+    "u2netp.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/u2netp.onnx",
+    "u2net_human_seg.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/u2net_human_seg.onnx",
+    "modnet.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/modnet.onnx",
+    "isnet-general-use.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/isnet-general-use.onnx",
+    "isnet-anime.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/isnet-anime.onnx",
+    "bria_rmbg_1.4.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/bria_rmbg_1.4.onnx",
+    "basnet.onnx": "https://huggingface.co/meeranrashith166/BG-Remover-Updates/resolve/main/models/basnet.onnx",
+}
+
+def download_model_on_demand(model_name, model_path, progress_callback=None):
+    """Downloads the selected model from Hugging Face if not present locally.
+    Downloads once and caches permanently in LOCALAPPDATA."""
+    filename = os.path.basename(model_path)
+    url = MODEL_DOWNLOAD_URLS.get(filename)
+    
+    if not url:
+        raise FileNotFoundError(
+            f"No download URL configured for model '{filename}'.\n"
+            f"Please check if the model file exists at: {model_path}"
+        )
+    
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    temp_path = model_path + ".tmp"
+    
+    logging.info(f"Downloading model '{model_name}' from {url}")
+    logging.info(f"Destination: {model_path}")
+    
+    def download_report(block_num, block_size, total_size):
+        if progress_callback and total_size > 0:
+            percent = int(block_num * block_size * 100 / total_size)
+            progress_callback(min(25, int(percent * 0.25)))  # Map to 0-25% range
+
+    try:
+        urllib.request.urlretrieve(url, temp_path, reporthook=download_report)
+        # Rename temp file to final path (atomic on same filesystem)
+        if os.path.exists(model_path):
+            os.remove(model_path)
+        os.rename(temp_path, model_path)
+        logging.info(f"Successfully downloaded and cached '{filename}' ({os.path.getsize(model_path) / 1024 / 1024:.1f} MB)")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to download model '{filename}': {e}")
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise RuntimeError(
+            f"Failed to download AI model '{model_name}'.\n\n"
+            f"Please check your internet connection and try again.\n"
+            f"Error: {e}"
+        )
 
 MODELS = {
     "Auto (Rembg)": None,
-    "U²Net": get_model_path("models/u2net.onnx"),
-    "U²NetP": get_model_path("models/u2netp.onnx"),
-    "U²Net Human Seg": get_model_path("models/u2net_human_seg.onnx"),
+    "U\u00b2Net": get_model_path("models/u2net.onnx"),
+    "U\u00b2NetP": get_model_path("models/u2netp.onnx"),
+    "U\u00b2Net Human Seg": get_model_path("models/u2net_human_seg.onnx"),
     "MODNet": get_model_path("models/modnet.onnx"),
     "IS-Net": get_model_path("models/isnet-general-use.onnx"),
     "IS-Net Anime": get_model_path("models/isnet-anime.onnx"),
@@ -318,46 +423,274 @@ def preprocess_for_model(img, model_name, session):
     if not isinstance(h, int) or not isinstance(w, int) or h == 0 or w == 0:
         h, w = 320, 320
 
-    resized = cv2.resize(img_copy, (w, h))
+    resized = cv2.resize(img_copy, (w, h), interpolation=cv2.INTER_LANCZOS4)
     arr = resized.astype(np.float32) / 255.0
     arr = np.transpose(arr, (2, 0, 1))[None]
     return arr
 
+
+def refine_mask(mask_raw, original_img, original_size):
+    """Refine a raw model mask to produce accurate, smooth edges.
+    Uses sigmoid normalization, high-res upscaling, morphological cleanup,
+    and a guided filter for precise edge alignment."""
+    h, w = original_size  # (height, width)
+
+    # 1. Sigmoid normalization – normalize raw logits to [0, 1] smoothly
+    mask_f = mask_raw.astype(np.float64)
+    m_min, m_max = mask_f.min(), mask_f.max()
+    if m_max - m_min > 1e-6:
+        mask_f = (mask_f - m_min) / (m_max - m_min)
+    else:
+        mask_f = np.zeros_like(mask_f)
+    # Apply sigmoid to sharpen the transition while preserving gradients
+    mask_f = 1.0 / (1.0 + np.exp(-12.0 * (mask_f - 0.5)))
+
+    # 2. High-quality upscale to original resolution
+    mask_hr = cv2.resize(mask_f, (w, h), interpolation=cv2.INTER_LANCZOS4)
+    mask_hr = np.clip(mask_hr, 0, 1)
+
+    # 3. Guided filter – use the original image as guide to align mask edges
+    #    with actual object boundaries (hair, fur, fine details)
+    try:
+        guide = cv2.cvtColor(original_img, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
+        mask_guided = mask_hr.astype(np.float32)
+        # Parameters: radius=8, eps=1e-4 for fine edge preservation
+        radius = max(4, min(16, int(min(h, w) * 0.008)))
+        eps = 1e-4
+        # Use OpenCV's guided filter (ximgproc) if available, else manual box filter
+        try:
+            mask_guided = cv2.ximgproc.guidedFilter(guide, mask_guided, radius, eps)
+        except AttributeError:
+            # Fallback: bilateral filter for edge-aware smoothing
+            mask_u8 = (mask_guided * 255).astype(np.uint8)
+            mask_u8 = cv2.bilateralFilter(mask_u8, d=9, sigmaColor=75, sigmaSpace=75)
+            mask_guided = mask_u8.astype(np.float32) / 255.0
+        mask_hr = np.clip(mask_guided, 0, 1).astype(np.float64)
+    except Exception:
+        pass  # If guided filter fails, continue with unguided mask
+
+    # 4. Morphological cleanup – remove small noise and fill small holes
+    mask_u8 = (mask_hr * 255).astype(np.uint8)
+    kernel_size = max(3, int(min(h, w) * 0.005) | 1)  # ensure odd
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    mask_u8 = cv2.morphologyEx(mask_u8, cv2.MORPH_CLOSE, kernel, iterations=1)
+    mask_u8 = cv2.morphologyEx(mask_u8, cv2.MORPH_OPEN, kernel, iterations=1)
+
+    # 5. Final edge smoothing – light Gaussian to remove staircase artifacts
+    mask_u8 = cv2.GaussianBlur(mask_u8, (0, 0), sigmaX=0.8, sigmaY=0.8)
+
+    return mask_u8
+
 class TourDialog(QDialog):
-    """A multi-step dialog to introduce the software features to new users."""
+    """A multi-step dialog to introduce the software features to new users.
+    Shows mini-replicas of the actual app interface for each tour step."""
     def __init__(self, parent=None, language_func=None):
         super().__init__(parent)
         self.get_translation = language_func
         self.current_step = 0
         self.steps = [
-            {"title": "tour_welcome_title", "desc": "tour_welcome_desc", "image": "tour_welcome.png"},
-            {"title": "tour_models_title", "desc": "tour_models_desc", "image": "tour_models.png"},
-            {"title": "tour_process_title", "desc": "tour_process_desc", "image": "tour_process.png"},
-            {"title": "tour_utils_title", "desc": "tour_utils_desc", "image": "tour_utils.png"},
+            {"title": "tour_welcome_title", "desc": "tour_welcome_desc"},
+            {"title": "tour_models_title", "desc": "tour_models_desc"},
+            {"title": "tour_process_title", "desc": "tour_process_desc"},
+            {"title": "tour_utils_title", "desc": "tour_utils_desc"},
         ]
         
         self.init_ui()
         self.update_step()
 
+    def _build_ui_preview(self, step_index):
+        """Build a mini replica of the actual app interface for each tour step."""
+        preview = QFrame()
+        preview.setObjectName("previewContainer")
+        preview.setFixedSize(600, 320)
+        preview.setStyleSheet("""
+            QFrame#previewContainer { background-color: #f4f5fa; border: 1px solid rgba(99,102,241,0.15); border-radius: 12px; }
+            QLabel { color: #333355; font-family: 'Inter', 'Segoe UI', sans-serif; border: none; background: transparent; }
+            QPushButton { font-family: 'Inter', 'Segoe UI', sans-serif; border-radius: 6px; padding: 5px 12px; font-size: 10pt; }
+        """)
+        p_layout = QVBoxLayout(preview)
+        p_layout.setContentsMargins(14, 12, 14, 12)
+        p_layout.setSpacing(8)
+
+        if step_index == 0:  # Welcome – show the full app skeleton
+            # Mini toolbar
+            tb = QFrame()
+            tb.setObjectName("miniToolbar")
+            tb.setStyleSheet("QFrame#miniToolbar { background-color: #ffffff; border: 1px solid #e0e1ec; border-radius: 6px; }")
+            tb_lay = QHBoxLayout(tb)
+            tb_lay.setContentsMargins(8, 4, 8, 4)
+            tb_lay.setSpacing(6)
+            for icon_text in ["🔍+", "🔍−", "🎨"]:
+                b = QPushButton(icon_text)
+                b.setFixedSize(36, 28)
+                b.setStyleSheet("background: #f0f0f8; border: 1px solid #d0d1e0; font-size: 10pt; color: #333355;")
+                tb_lay.addWidget(b)
+            tb_lay.addStretch()
+            model_lbl = QLabel("Model: Bria RMBG v1.4")
+            model_lbl.setStyleSheet("font-size: 10pt; color: #6366f1; font-weight: bold;")
+            tb_lay.addWidget(model_lbl)
+            tb_lay.addStretch()
+            feather_lbl = QLabel("Feather: 2")
+            feather_lbl.setStyleSheet("font-size: 10pt; color: #8888a0;")
+            tb_lay.addWidget(feather_lbl)
+            p_layout.addWidget(tb)
+
+            # Image area – two panels
+            img_row = QHBoxLayout()
+            for label_text in ["📂 Original Image", "✨ Processed Image"]:
+                panel = QLabel(label_text)
+                panel.setAlignment(Qt.AlignCenter)
+                panel.setStyleSheet("background: #e8e9f4; border: 2px dashed #d0d1e0; border-radius: 8px; color: #555570; font-size: 11pt; font-weight: bold; min-height: 160px;")
+                img_row.addWidget(panel)
+            p_layout.addLayout(img_row)
+
+            # Bottom bar
+            bb = QFrame()
+            bb.setObjectName("miniBottomBar")
+            bb.setStyleSheet("QFrame#miniBottomBar { background-color: #ffffff; border: 1px solid #e0e1ec; border-radius: 6px; }")
+            bb_lay = QHBoxLayout(bb)
+            bb_lay.setContentsMargins(8, 4, 8, 4)
+            bb_lay.addStretch()
+            for btn_text, is_primary in [("📂 Browse", True), ("✂ Remove BG", True), ("↩ Undo", False), ("↪ Redo", False), ("💾 Save", True)]:
+                b = QPushButton(btn_text)
+                if is_primary:
+                    b.setStyleSheet("background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #6366f1,stop:1 #8b5cf6); color: white; font-weight: bold; font-size: 10pt; padding: 5px 10px; border-radius: 6px;")
+                else:
+                    b.setStyleSheet("background: #f0f0f8; color: #333355; border: 1px solid #d0d1e0; font-size: 10pt; padding: 5px 10px; border-radius: 6px;")
+                bb_lay.addWidget(b)
+            bb_lay.addStretch()
+            p_layout.addWidget(bb)
+
+        elif step_index == 1:  # AI Models & Feathering
+            title = QLabel("⚙️  AI Model Selection")
+            title.setStyleSheet("font-size: 13pt; font-weight: bold; color: #4f46e5;")
+            title.setAlignment(Qt.AlignCenter)
+            p_layout.addWidget(title)
+            p_layout.addSpacing(6)
+
+            # Model selector replica
+            model_frame = QFrame()
+            model_frame.setObjectName("modelFrame")
+            model_frame.setStyleSheet("QFrame#modelFrame { background: #ffffff; border: 1px solid #d0d1e0; border-radius: 8px; }")
+            mf_lay = QVBoxLayout(model_frame)
+            mf_lay.setContentsMargins(12, 10, 12, 10)
+            mf_lay.setSpacing(6)
+            lbl = QLabel("MODEL")
+            lbl.setStyleSheet("font-size: 9pt; font-weight: bold; color: #8888a0; letter-spacing: 1px;")
+            mf_lay.addWidget(lbl)
+            for model_name in ["✦ Auto (Rembg)", "✦ U²Net", "✦ Bria RMBG v1.4 ◀ selected", "✦ IS-Net", "✦ MODNet"]:
+                m = QLabel(model_name)
+                if "selected" in model_name:
+                    m.setStyleSheet("font-size: 10.5pt; color: #6366f1; font-weight: bold; padding: 4px 8px; background: rgba(99,102,241,0.08); border-radius: 4px;")
+                else:
+                    m.setStyleSheet("font-size: 10.5pt; color: #555570; padding: 4px 8px;")
+                mf_lay.addWidget(m)
+            p_layout.addWidget(model_frame)
+
+            # Feather control replica
+            feather_frame = QFrame()
+            feather_frame.setObjectName("featherFrame")
+            feather_frame.setStyleSheet("QFrame#featherFrame { background: #ffffff; border: 1px solid #d0d1e0; border-radius: 8px; }")
+            ff_lay = QHBoxLayout(feather_frame)
+            ff_lay.setContentsMargins(12, 10, 12, 10)
+            ff_lbl = QLabel("FEATHER")
+            ff_lbl.setStyleSheet("font-size: 9pt; font-weight: bold; color: #8888a0;")
+            ff_lay.addWidget(ff_lbl)
+            ff_val = QLabel("▸ 0  1  [2]  3  4  5 ◂")
+            ff_val.setStyleSheet("font-size: 11pt; color: #6366f1; font-weight: bold;")
+            ff_val.setAlignment(Qt.AlignCenter)
+            ff_lay.addWidget(ff_val)
+            p_layout.addWidget(feather_frame)
+            p_layout.addStretch()
+
+        elif step_index == 2:  # Load & Process
+            title = QLabel("🖼️  Load & Process")
+            title.setStyleSheet("font-size: 13pt; font-weight: bold; color: #4f46e5;")
+            title.setAlignment(Qt.AlignCenter)
+            p_layout.addWidget(title)
+            p_layout.addSpacing(6)
+
+            # Step-by-step flow
+            flow_frame = QFrame()
+            flow_frame.setObjectName("flowFrame")
+            flow_frame.setStyleSheet("QFrame#flowFrame { background: #ffffff; border: 1px solid #d0d1e0; border-radius: 8px; }")
+            fl = QVBoxLayout(flow_frame)
+            fl.setContentsMargins(14, 12, 14, 12)
+            fl.setSpacing(10)
+            steps_data = [
+                ("① Click  📂 Browse  or drag & drop an image", "#333355"),
+                ("② Select an AI model from the toolbar", "#333355"),
+                ("③ Click  ✂ Remove Background", "#333355"),
+                ("④ Watch the progress bar as AI processes", "#333355"),
+                ("⑤ View your result in the left panel!", "#6366f1"),
+            ]
+            for text, color in steps_data:
+                s = QLabel(text)
+                s.setStyleSheet(f"font-size: 11pt; color: {color}; padding: 4px 0px;")
+                fl.addWidget(s)
+            p_layout.addWidget(flow_frame)
+
+            # Progress bar replica
+            prog = QProgressBar()
+            prog.setValue(75)
+            prog.setFixedHeight(22)
+            prog.setStyleSheet("""
+                QProgressBar { background: #e8e9f4; border: 1px solid #d0d1e0; border-radius: 6px; text-align: center; font-size: 10pt; color: #333355; }
+                QProgressBar::chunk { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #6366f1,stop:0.5 #8b5cf6,stop:1 #a78bfa); border-radius: 5px; }
+            """)
+            p_layout.addWidget(prog)
+            p_layout.addStretch()
+
+        elif step_index == 3:  # Utilities & Export
+            title = QLabel("🛠️  Utilities & Export")
+            title.setStyleSheet("font-size: 13pt; font-weight: bold; color: #4f46e5;")
+            title.setAlignment(Qt.AlignCenter)
+            p_layout.addWidget(title)
+            p_layout.addSpacing(6)
+
+            # Utilities grid
+            utils_frame = QFrame()
+            utils_frame.setObjectName("utilsFrame")
+            utils_frame.setStyleSheet("QFrame#utilsFrame { background: #ffffff; border: 1px solid #d0d1e0; border-radius: 8px; }")
+            uf_lay = QVBoxLayout(utils_frame)
+            uf_lay.setContentsMargins(14, 12, 14, 12)
+            uf_lay.setSpacing(8)
+            utils_data = [
+                ("🔍  Zoom In / Out", "Ctrl++ / Ctrl+−"),
+                ("↩  Undo / Redo", "Ctrl+Z / Ctrl+Y"),
+                ("🎨  Switch Theme", "Ctrl+T  (Light ↔ Dark)"),
+                ("💾  Save As", "PNG, JPEG, PSD, WEBP"),
+                ("🌐  Languages", "English, தமிழ், हिन्दी, Français, Deutsch"),
+            ]
+            for icon_text, shortcut in utils_data:
+                row = QHBoxLayout()
+                lbl = QLabel(icon_text)
+                lbl.setStyleSheet("font-size: 11pt; font-weight: bold; color: #333355;")
+                row.addWidget(lbl)
+                row.addStretch()
+                sc = QLabel(shortcut)
+                sc.setStyleSheet("font-size: 10pt; color: #6366f1; background: rgba(99,102,241,0.06); padding: 3px 8px; border-radius: 4px;")
+                row.addWidget(sc)
+                uf_lay.addLayout(row)
+            p_layout.addWidget(utils_frame)
+            p_layout.addStretch()
+
+        return preview
+
     def init_ui(self):
         self.setWindowTitle("BG Remover Tour")
-        self.setFixedSize(540, 500)
+        self.setFixedSize(650, 600)
         self.setModal(True)
         
         layout = QVBoxLayout()
-        layout.setContentsMargins(20, 20, 20, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(24, 20, 24, 16)
+        layout.setSpacing(14)
         
-        # Image area
-        self.image_label = QLabel()
-        self.image_label.setFixedSize(500, 260)
-        self.image_label.setAlignment(Qt.AlignCenter)
-        self.image_label.setStyleSheet("""
-            background-color: rgba(99, 102, 241, 0.06);
-            border: 1px solid rgba(99, 102, 241, 0.15);
-            border-radius: 12px;
-        """)
-        layout.addWidget(self.image_label)
+        # Preview area – placeholder that gets replaced each step
+        self.preview_container = QVBoxLayout()
+        self.preview_container.setAlignment(Qt.AlignCenter)
+        self.current_preview = None
+        layout.addLayout(self.preview_container)
         
         # Text area
         text_container = QFrame()
@@ -365,13 +698,13 @@ class TourDialog(QDialog):
         text_layout.setContentsMargins(10, 0, 10, 0)
         
         self.title_label = QLabel()
-        self.title_label.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        self.title_label.setFont(QFont("Inter", 16, QFont.Bold))
         self.title_label.setWordWrap(True)
         self.title_label.setAlignment(Qt.AlignCenter)
         text_layout.addWidget(self.title_label)
         
         self.desc_label = QLabel()
-        self.desc_label.setFont(QFont("Segoe UI", 10))
+        self.desc_label.setFont(QFont("Inter", 11))
         self.desc_label.setWordWrap(True)
         self.desc_label.setAlignment(Qt.AlignCenter)
         self.desc_label.setStyleSheet("color: #8888a0; margin-top: 6px; line-height: 1.4;")
@@ -387,7 +720,7 @@ class TourDialog(QDialog):
         self.dot_labels = []
         for i in range(len(self.steps)):
             dot = QLabel("●" if i == 0 else "○")
-            dot.setFont(QFont("Segoe UI", 10))
+            dot.setFont(QFont("Inter", 10))
             dot.setAlignment(Qt.AlignCenter)
             dot.setFixedWidth(18)
             self.dots_layout.addWidget(dot)
@@ -423,13 +756,12 @@ class TourDialog(QDialog):
         self.title_label.setText(self.get_translation(step_data["title"]))
         self.desc_label.setText(self.get_translation(step_data["desc"]))
         
-        # Load step image if exists
-        img_path = os.path.join(ASSETS_DIR, step_data["image"])
-        if os.path.exists(img_path):
-            pixmap = QPixmap(img_path)
-            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        else:
-            self.image_label.setText(f"[Image: {step_data['image']}]") # Placeholder
+        # Replace the preview widget
+        if self.current_preview is not None:
+            self.preview_container.removeWidget(self.current_preview)
+            self.current_preview.deleteLater()
+        self.current_preview = self._build_ui_preview(self.current_step)
+        self.preview_container.addWidget(self.current_preview)
 
         # Update buttons
         self.back_btn.setEnabled(self.current_step > 0)
@@ -499,8 +831,16 @@ class RemoveBackgroundThread(QThread):
 
             else:
                 model_path = MODELS.get(self.model_name)
-                if not model_path or not os.path.exists(model_path):
-                    raise FileNotFoundError(f"Model file not found: {model_path}")
+                if not model_path:
+                    raise FileNotFoundError(f"Model path was not configured for: {self.model_name}")
+
+                # --- ON-DEMAND DOWNLOAD: Download model if not cached locally ---
+                if not os.path.exists(model_path):
+                    self.progress.emit(5)
+                    download_model_on_demand(
+                        self.model_name, model_path,
+                        progress_callback=lambda p: self.progress.emit(p)
+                    )
                 
                 # --- NEWLY ADDED: Verify model before loading ---
                 expected_hash = MODEL_HASHES.get(model_path)
@@ -587,11 +927,12 @@ class RemoveBackgroundThread(QThread):
                 if mask_single is None:
                     raise RuntimeError("Could not interpret model outputs into a mask.")
 
-                mask = (cv2.resize(mask_single, (self.image_np.shape[1], self.image_np.shape[0])) * 255.0)
-                if mask.max() > 255:
-                    mask = np.clip(mask / mask.max() * 255.0, 0, 255)
-                mask = np.clip(mask, 0, 255).astype(np.uint8)
-                _, mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)
+                # --- IMPROVED EDGE DETECTION & REFINEMENT ---
+                mask = refine_mask(
+                    mask_single,
+                    self.image_np,
+                    (self.image_np.shape[0], self.image_np.shape[1])
+                )
                 
                 result = cv2.cvtColor(self.image_np, cv2.COLOR_RGB2RGBA)
                 result[:, :, 3] = mask
@@ -602,9 +943,13 @@ class RemoveBackgroundThread(QThread):
                 self.finished.emit(None)
                 return
 
-            if self.feather > 0 and result.shape[2] == 4:
+            # --- EDGE SMOOTHENING FOR ALL MODELS ---
+            # Always apply at least a minimal edge smooth (sigma=1.0)
+            # to eliminate jagged staircase artifacts on edges
+            if result.shape[2] == 4:
                 alpha = result[:, :, 3]
-                blurred = cv2.GaussianBlur(alpha, (0, 0), sigmaX=self.feather, sigmaY=self.feather)
+                smooth_sigma = max(1.0, float(self.feather))
+                blurred = cv2.GaussianBlur(alpha, (0, 0), sigmaX=smooth_sigma, sigmaY=smooth_sigma)
                 result[:, :, 3] = blurred
 
             self.progress.emit(100)
@@ -732,12 +1077,12 @@ class DownloadProgressDialog(QDialog):
         layout.setSpacing(14)
         
         title_label = QLabel("⬇️  Downloading Update...")
-        title_label.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        title_label.setFont(QFont("Inter", 13, QFont.Bold))
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
         
         self.status_label = QLabel("Initializing...")
-        self.status_label.setFont(QFont("Segoe UI", 9))
+        self.status_label.setFont(QFont("Inter", 9))
         self.status_label.setAlignment(Qt.AlignCenter)
         self.status_label.setStyleSheet("color: #8888a0;")
         layout.addWidget(self.status_label)
@@ -764,8 +1109,8 @@ DARK_STYLESHEET = """
 QMainWindow, QWidget {
     background-color: #13141f;
     color: #e0e0ee;
-    font-family: "Segoe UI", "Arial", sans-serif;
-    font-size: 10pt;
+    font-family: "Inter", "Segoe UI", -apple-system, sans-serif;
+    font-size: 9.5pt;
 }
 
 /* ── Menu Bar ── */
@@ -774,7 +1119,7 @@ QMenuBar {
     color: #c0c0d0;
     border-bottom: 1px solid #2a2b3d;
     padding: 2px 0px;
-    font-size: 10pt;
+    font-size: 9.5pt;
 }
 QMenuBar::item {
     padding: 6px 14px;
@@ -810,16 +1155,16 @@ QMenu::separator {
 QFrame#toolbarFrame {
     background-color: #1a1b2e;
     border: 1px solid #2a2b3d;
-    border-radius: 12px;
-    padding: 6px 12px;
-    margin: 6px;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 2px;
 }
 QFrame#bottomBarFrame {
     background-color: #1a1b2e;
     border: 1px solid #2a2b3d;
-    border-radius: 12px;
-    padding: 6px 12px;
-    margin: 6px;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 2px;
 }
 
 /* ── Primary Action Buttons ── */
@@ -827,21 +1172,23 @@ QPushButton#primaryBtn {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #6366f1, stop:1 #8b5cf6);
     color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 22px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 16px;
     font-weight: bold;
-    font-size: 10pt;
-    min-height: 20px;
+    font-size: 9.5pt;
+    min-height: 18px;
 }
 QPushButton#primaryBtn:hover {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #7c7ff7, stop:1 #a78bfa);
+    border: 1px solid rgba(165, 180, 252, 0.4);
 }
 QPushButton#primaryBtn:pressed {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #4f46e5, stop:1 #7c3aed);
-    padding: 11px 22px 9px 22px;
+    border: 2px solid #a5b4fc;
+    padding: 5px 15px;
 }
 QPushButton#primaryBtn:disabled {
     background-color: #2a2b3d;
@@ -853,10 +1200,10 @@ QPushButton#secondaryBtn {
     background-color: rgba(42, 43, 61, 0.8);
     color: #c0c0d0;
     border: 1px solid #3a3b5d;
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 10pt;
-    min-height: 20px;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 9.5pt;
+    min-height: 18px;
 }
 QPushButton#secondaryBtn:hover {
     background-color: rgba(99, 102, 241, 0.18);
@@ -865,7 +1212,8 @@ QPushButton#secondaryBtn:hover {
 }
 QPushButton#secondaryBtn:pressed {
     background-color: rgba(99, 102, 241, 0.30);
-    padding: 11px 18px 9px 18px;
+    border: 2px solid #818cf8;
+    padding: 5px 13px;
 }
 
 /* ── Utility Buttons (Zoom, Theme) ── */
@@ -873,8 +1221,8 @@ QPushButton#utilBtn {
     background-color: transparent;
     color: #8888a0;
     border: 1px solid #2a2b3d;
-    border-radius: 8px;
-    padding: 8px 14px;
+    border-radius: 6px;
+    padding: 5px 10px;
     font-size: 9pt;
 }
 QPushButton#utilBtn:hover {
@@ -884,6 +1232,39 @@ QPushButton#utilBtn:hover {
 }
 QPushButton#utilBtn:pressed {
     background-color: rgba(99, 102, 241, 0.22);
+    border: 2px solid #818cf8;
+    padding: 4px 9px;
+}
+
+/* ── Control Container ── */
+QFrame#controlContainer {
+    background-color: #1e1f33;
+    border: 1px solid #3a3b5d;
+    border-radius: 8px;
+    padding: 2px 4px;
+}
+QFrame#controlContainer:hover {
+    border-color: #6366f1;
+}
+QFrame#controlContainer QComboBox, QFrame#controlContainer QSpinBox {
+    background-color: transparent;
+    border: none;
+    padding: 2px 4px;
+}
+QFrame#controlContainer QComboBox:hover, QFrame#controlContainer QSpinBox:hover {
+    border: none;
+    background-color: transparent;
+}
+QFrame#controlContainer QComboBox:focus, QFrame#controlContainer QSpinBox:focus {
+    border: none;
+    background-color: transparent;
+}
+QFrame#controlContainer QLabel {
+    color: #8888a0;
+    font-size: 8.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-left: 4px;
 }
 
 /* ── ComboBox ── */
@@ -891,10 +1272,10 @@ QComboBox {
     background-color: #1e1f33;
     color: #c0c0d0;
     border: 1px solid #3a3b5d;
-    border-radius: 8px;
-    padding: 7px 12px;
-    min-width: 120px;
-    font-size: 10pt;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 100px;
+    font-size: 9.5pt;
 }
 QComboBox:hover {
     border-color: #6366f1;
@@ -904,20 +1285,19 @@ QComboBox:focus {
 }
 QComboBox::drop-down {
     border: none;
-    width: 28px;
+    width: 24px;
 }
 QComboBox::down-arrow {
-    image: none;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #8888a0;
-    margin-right: 8px;
+    image: url(DOWN_ARROW_DARK_PLACEHOLDER);
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
 }
 QComboBox QAbstractItemView {
     background-color: #1e1f33;
     color: #c0c0d0;
     border: 1px solid #3a3b5d;
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 4px;
     selection-background-color: rgba(99, 102, 241, 0.3);
     selection-color: #c7d2fe;
@@ -929,9 +1309,9 @@ QSpinBox {
     background-color: #1e1f33;
     color: #c0c0d0;
     border: 1px solid #3a3b5d;
-    border-radius: 8px;
-    padding: 7px 10px;
-    font-size: 10pt;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 9.5pt;
 }
 QSpinBox:hover {
     border-color: #6366f1;
@@ -945,29 +1325,39 @@ QSpinBox::up-button, QSpinBox::down-button {
 QSpinBox::up-button:hover, QSpinBox::down-button:hover {
     background-color: rgba(99, 102, 241, 0.3);
 }
+QSpinBox::up-arrow {
+    image: url(UP_ARROW_DARK_PLACEHOLDER);
+    width: 8px;
+    height: 8px;
+}
+QSpinBox::down-arrow {
+    image: url(DOWN_ARROW_DARK_PLACEHOLDER);
+    width: 8px;
+    height: 8px;
+}
 
 /* ── Progress Bar ── */
 QProgressBar {
     background-color: #1e1f33;
     border: 1px solid #2a2b3d;
-    border-radius: 10px;
+    border-radius: 6px;
     text-align: center;
     color: #c0c0d0;
     font-weight: bold;
-    min-height: 22px;
+    min-height: 16px;
     margin: 4px 6px;
 }
 QProgressBar::chunk {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #6366f1, stop:0.5 #8b5cf6, stop:1 #a78bfa);
-    border-radius: 9px;
+    border-radius: 5px;
 }
 
 /* ── Scroll Area ── */
 QScrollArea {
     background-color: #0f1019;
     border: 1px solid #2a2b3d;
-    border-radius: 12px;
+    border-radius: 8px;
 }
 
 /* ── Scrollbar ── */
@@ -1009,20 +1399,20 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 /* ── Labels ── */
 QLabel {
     color: #c0c0d0;
-    font-size: 10pt;
+    font-size: 9.5pt;
 }
 QLabel#sectionLabel {
     color: #8888a0;
-    font-size: 9pt;
+    font-size: 8.5pt;
     font-weight: bold;
     text-transform: uppercase;
 }
 QLabel#dropZoneLabel {
     color: #555570;
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: bold;
     border: 2px dashed #2a2b3d;
-    border-radius: 12px;
+    border-radius: 8px;
     background-color: #0f1019;
 }
 
@@ -1037,7 +1427,7 @@ QFrame#separator {
 QDialog {
     background-color: #1a1b2e;
     color: #e0e0ee;
-    border-radius: 12px;
+    border-radius: 8px;
 }
 QDialog QLabel {
     color: #c0c0d0;
@@ -1052,8 +1442,8 @@ QMessageBox QPushButton {
     background-color: #2a2b3d;
     color: #c0c0d0;
     border: 1px solid #3a3b5d;
-    border-radius: 8px;
-    padding: 8px 20px;
+    border-radius: 6px;
+    padding: 6px 16px;
     min-width: 80px;
 }
 QMessageBox QPushButton:hover {
@@ -1077,8 +1467,8 @@ LIGHT_STYLESHEET = """
 QMainWindow, QWidget {
     background-color: #f4f5fa;
     color: #1e1e2e;
-    font-family: "Segoe UI", "Arial", sans-serif;
-    font-size: 10pt;
+    font-family: "Inter", "Segoe UI", -apple-system, sans-serif;
+    font-size: 9.5pt;
 }
 
 /* ── Menu Bar ── */
@@ -1087,7 +1477,7 @@ QMenuBar {
     color: #333355;
     border-bottom: 1px solid #e0e1ec;
     padding: 2px 0px;
-    font-size: 10pt;
+    font-size: 9.5pt;
 }
 QMenuBar::item {
     padding: 6px 14px;
@@ -1123,16 +1513,16 @@ QMenu::separator {
 QFrame#toolbarFrame {
     background-color: #ffffff;
     border: 1px solid #e0e1ec;
-    border-radius: 12px;
-    padding: 6px 12px;
-    margin: 6px;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 2px;
 }
 QFrame#bottomBarFrame {
     background-color: #ffffff;
     border: 1px solid #e0e1ec;
-    border-radius: 12px;
-    padding: 6px 12px;
-    margin: 6px;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 2px;
 }
 
 /* ── Primary Action Buttons ── */
@@ -1140,21 +1530,23 @@ QPushButton#primaryBtn {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #6366f1, stop:1 #8b5cf6);
     color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 22px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 16px;
     font-weight: bold;
-    font-size: 10pt;
-    min-height: 20px;
+    font-size: 9.5pt;
+    min-height: 18px;
 }
 QPushButton#primaryBtn:hover {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #7c7ff7, stop:1 #a78bfa);
+    border: 1px solid rgba(99, 102, 241, 0.4);
 }
 QPushButton#primaryBtn:pressed {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #4f46e5, stop:1 #7c3aed);
-    padding: 11px 22px 9px 22px;
+    border: 2px solid #4f46e5;
+    padding: 5px 15px;
 }
 QPushButton#primaryBtn:disabled {
     background-color: #d0d0dd;
@@ -1166,10 +1558,10 @@ QPushButton#secondaryBtn {
     background-color: #ffffff;
     color: #333355;
     border: 1px solid #d0d1e0;
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 10pt;
-    min-height: 20px;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 9.5pt;
+    min-height: 18px;
 }
 QPushButton#secondaryBtn:hover {
     background-color: rgba(99, 102, 241, 0.08);
@@ -1178,7 +1570,8 @@ QPushButton#secondaryBtn:hover {
 }
 QPushButton#secondaryBtn:pressed {
     background-color: rgba(99, 102, 241, 0.16);
-    padding: 11px 18px 9px 18px;
+    border: 2px solid #6366f1;
+    padding: 5px 13px;
 }
 
 /* ── Utility Buttons (Zoom, Theme) ── */
@@ -1186,8 +1579,8 @@ QPushButton#utilBtn {
     background-color: transparent;
     color: #666688;
     border: 1px solid #d0d1e0;
-    border-radius: 8px;
-    padding: 8px 14px;
+    border-radius: 6px;
+    padding: 5px 10px;
     font-size: 9pt;
 }
 QPushButton#utilBtn:hover {
@@ -1197,6 +1590,39 @@ QPushButton#utilBtn:hover {
 }
 QPushButton#utilBtn:pressed {
     background-color: rgba(99, 102, 241, 0.16);
+    border: 2px solid #6366f1;
+    padding: 4px 9px;
+}
+
+/* ── Control Container ── */
+QFrame#controlContainer {
+    background-color: #ffffff;
+    border: 1px solid #d0d1e0;
+    border-radius: 8px;
+    padding: 2px 4px;
+}
+QFrame#controlContainer:hover {
+    border-color: #6366f1;
+}
+QFrame#controlContainer QComboBox, QFrame#controlContainer QSpinBox {
+    background-color: transparent;
+    border: none;
+    padding: 2px 4px;
+}
+QFrame#controlContainer QComboBox:hover, QFrame#controlContainer QSpinBox:hover {
+    border: none;
+    background-color: transparent;
+}
+QFrame#controlContainer QComboBox:focus, QFrame#controlContainer QSpinBox:focus {
+    border: none;
+    background-color: transparent;
+}
+QFrame#controlContainer QLabel {
+    color: #666688;
+    font-size: 8.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-left: 4px;
 }
 
 /* ── ComboBox ── */
@@ -1204,10 +1630,10 @@ QComboBox {
     background-color: #ffffff;
     color: #333355;
     border: 1px solid #d0d1e0;
-    border-radius: 8px;
-    padding: 7px 12px;
-    min-width: 120px;
-    font-size: 10pt;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 100px;
+    font-size: 9.5pt;
 }
 QComboBox:hover {
     border-color: #6366f1;
@@ -1217,20 +1643,19 @@ QComboBox:focus {
 }
 QComboBox::drop-down {
     border: none;
-    width: 28px;
+    width: 24px;
 }
 QComboBox::down-arrow {
-    image: none;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #666688;
-    margin-right: 8px;
+    image: url(DOWN_ARROW_LIGHT_PLACEHOLDER);
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
 }
 QComboBox QAbstractItemView {
     background-color: #ffffff;
     color: #333355;
     border: 1px solid #d0d1e0;
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 4px;
     selection-background-color: rgba(99, 102, 241, 0.15);
     selection-color: #4f46e5;
@@ -1242,9 +1667,9 @@ QSpinBox {
     background-color: #ffffff;
     color: #333355;
     border: 1px solid #d0d1e0;
-    border-radius: 8px;
-    padding: 7px 10px;
-    font-size: 10pt;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 9.5pt;
 }
 QSpinBox:hover {
     border-color: #6366f1;
@@ -1258,29 +1683,39 @@ QSpinBox::up-button, QSpinBox::down-button {
 QSpinBox::up-button:hover, QSpinBox::down-button:hover {
     background-color: rgba(99, 102, 241, 0.15);
 }
+QSpinBox::up-arrow {
+    image: url(UP_ARROW_LIGHT_PLACEHOLDER);
+    width: 8px;
+    height: 8px;
+}
+QSpinBox::down-arrow {
+    image: url(DOWN_ARROW_LIGHT_PLACEHOLDER);
+    width: 8px;
+    height: 8px;
+}
 
 /* ── Progress Bar ── */
 QProgressBar {
     background-color: #e8e9f4;
     border: 1px solid #d0d1e0;
-    border-radius: 10px;
+    border-radius: 6px;
     text-align: center;
     color: #333355;
     font-weight: bold;
-    min-height: 22px;
+    min-height: 16px;
     margin: 4px 6px;
 }
 QProgressBar::chunk {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 #6366f1, stop:0.5 #8b5cf6, stop:1 #a78bfa);
-    border-radius: 9px;
+    border-radius: 5px;
 }
 
 /* ── Scroll Area ── */
 QScrollArea {
     background-color: #ecedf6;
     border: 1px solid #d0d1e0;
-    border-radius: 12px;
+    border-radius: 8px;
 }
 
 /* ── Scrollbar ── */
@@ -1322,20 +1757,20 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 /* ── Labels ── */
 QLabel {
     color: #333355;
-    font-size: 10pt;
+    font-size: 9.5pt;
 }
 QLabel#sectionLabel {
     color: #666688;
-    font-size: 9pt;
+    font-size: 8.5pt;
     font-weight: bold;
     text-transform: uppercase;
 }
 QLabel#dropZoneLabel {
     color: #9999bb;
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: bold;
     border: 2px dashed #c0c1d0;
-    border-radius: 12px;
+    border-radius: 8px;
     background-color: #ecedf6;
 }
 
@@ -1350,7 +1785,7 @@ QFrame#separator {
 QDialog {
     background-color: #ffffff;
     color: #1e1e2e;
-    border-radius: 12px;
+    border-radius: 8px;
 }
 QDialog QLabel {
     color: #333355;
@@ -1365,8 +1800,8 @@ QMessageBox QPushButton {
     background-color: #f0f0f8;
     color: #333355;
     border: 1px solid #d0d1e0;
-    border-radius: 8px;
-    padding: 8px 20px;
+    border-radius: 6px;
+    padding: 6px 16px;
     min-width: 80px;
 }
 QMessageBox QPushButton:hover {
@@ -1384,6 +1819,12 @@ QToolTip {
     font-size: 9pt;
 }
 """
+
+# Replace placeholders with runtime absolute paths
+DARK_STYLESHEET = DARK_STYLESHEET.replace("DOWN_ARROW_DARK_PLACEHOLDER", down_arrow_dark_path)
+LIGHT_STYLESHEET = LIGHT_STYLESHEET.replace("DOWN_ARROW_LIGHT_PLACEHOLDER", down_arrow_light_path)
+DARK_STYLESHEET = DARK_STYLESHEET.replace("UP_ARROW_DARK_PLACEHOLDER", up_arrow_dark_path)
+LIGHT_STYLESHEET = LIGHT_STYLESHEET.replace("UP_ARROW_LIGHT_PLACEHOLDER", up_arrow_light_path)
 
 # =============================================
 # END MODERN UI STYLESHEET SYSTEM
@@ -1406,7 +1847,7 @@ class BackgroundRemoverApp(QMainWindow):
         self.image_np = None
         self.result_np = None
         self.original_image_np = None
-        self.is_dark = True
+        self.is_dark = False
         self.undo_stack = []
         self.redo_stack = []
         self.drag_pos = None
@@ -1492,8 +1933,8 @@ class BackgroundRemoverApp(QMainWindow):
         images_layout.addWidget(self.right_scroll_area)
         images_layout.addWidget(self.left_scroll_area)
         
-        font = QFont("Segoe UI", 10)
-        font_bold = QFont("Segoe UI", 10, QFont.Bold)
+        font = QFont("Inter", 10)
+        font_bold = QFont("Inter", 10, QFont.Bold)
 
         self.language_select = QComboBox()
         self.language_select.addItems(LANGUAGES.keys())
@@ -1504,6 +1945,7 @@ class BackgroundRemoverApp(QMainWindow):
         self.model_label.setObjectName("sectionLabel")
         self.model_select = QComboBox()
         self.model_select.addItems(MODELS.keys())
+        self.model_select.setCurrentText("Bria RMBG v1.4")
 
         self.feather_label = QLabel()
         self.feather_label.setObjectName("sectionLabel")
@@ -1531,54 +1973,51 @@ class BackgroundRemoverApp(QMainWindow):
 
         self.update_ui_texts()
 
+        # --- Create Control Containers ---
+        self.model_container = QFrame()
+        self.model_container.setObjectName("controlContainer")
+        model_cont_layout = QHBoxLayout(self.model_container)
+        model_cont_layout.setContentsMargins(6, 2, 6, 2)
+        model_cont_layout.setSpacing(4)
+        model_cont_layout.addWidget(self.model_label)
+        model_cont_layout.addWidget(self.model_select)
+
+        self.feather_container = QFrame()
+        self.feather_container.setObjectName("controlContainer")
+        feather_cont_layout = QHBoxLayout(self.feather_container)
+        feather_cont_layout.setContentsMargins(6, 2, 6, 2)
+        feather_cont_layout.setSpacing(4)
+        feather_cont_layout.addWidget(self.feather_label)
+        feather_cont_layout.addWidget(self.feather_spinbox)
+
+        self.language_container = QFrame()
+        self.language_container.setObjectName("controlContainer")
+        language_cont_layout = QHBoxLayout(self.language_container)
+        language_cont_layout.setContentsMargins(6, 2, 6, 2)
+        language_cont_layout.setSpacing(4)
+        language_cont_layout.addWidget(self.language_label)
+        language_cont_layout.addWidget(self.language_select)
+
         # --- Top Toolbar in a styled QFrame ---
         toolbar_frame = QFrame()
         toolbar_frame.setObjectName("toolbarFrame")
         top_layout = QHBoxLayout(toolbar_frame)
         top_layout.setContentsMargins(8, 4, 8, 4)
-        top_layout.setSpacing(6)
+        top_layout.setSpacing(8)
 
-        # Left group: View controls
+        # Left: Zoom and Theme
         top_layout.addWidget(self.zoom_in_btn)
         top_layout.addWidget(self.zoom_out_btn)
         top_layout.addWidget(self.theme_btn)
 
-        # Separator
-        sep1 = QFrame()
-        sep1.setObjectName("separator")
-        sep1.setFrameShape(QFrame.VLine)
-        sep1.setFixedWidth(2)
-        sep1.setFixedHeight(28)
-        top_layout.addWidget(sep1)
-
+        # Center: Model selection
+        top_layout.addStretch()
+        top_layout.addWidget(self.model_container)
         top_layout.addStretch()
 
-        # Center group: Model & Feather
-        top_layout.addWidget(self.model_label)
-        top_layout.addWidget(self.model_select)
-
-        sep2 = QFrame()
-        sep2.setObjectName("separator")
-        sep2.setFrameShape(QFrame.VLine)
-        sep2.setFixedWidth(2)
-        sep2.setFixedHeight(28)
-        top_layout.addWidget(sep2)
-
-        top_layout.addWidget(self.feather_label)
-        top_layout.addWidget(self.feather_spinbox)
-
-        top_layout.addStretch()
-
-        # Right group: Language
-        sep3 = QFrame()
-        sep3.setObjectName("separator")
-        sep3.setFrameShape(QFrame.VLine)
-        sep3.setFixedWidth(2)
-        sep3.setFixedHeight(28)
-        top_layout.addWidget(sep3)
-
-        top_layout.addWidget(self.language_label)
-        top_layout.addWidget(self.language_select)
+        # Right: Feather and Language
+        top_layout.addWidget(self.feather_container)
+        top_layout.addWidget(self.language_container)
 
         # --- Bottom Action Bar in a styled QFrame ---
         bottom_frame = QFrame()
@@ -1588,26 +2027,30 @@ class BackgroundRemoverApp(QMainWindow):
         bottom_layout.setSpacing(10)
 
         bottom_layout.addStretch()
+
+        # Center: Browse & Process
         bottom_layout.addWidget(self.browse_btn)
         bottom_layout.addWidget(self.remove_btn)
 
-        sep4 = QFrame()
-        sep4.setObjectName("separator")
-        sep4.setFrameShape(QFrame.VLine)
-        sep4.setFixedWidth(2)
-        sep4.setFixedHeight(28)
-        bottom_layout.addWidget(sep4)
+        sep_mid1 = QFrame()
+        sep_mid1.setObjectName("separator")
+        sep_mid1.setFrameShape(QFrame.VLine)
+        sep_mid1.setFixedWidth(2)
+        sep_mid1.setFixedHeight(24)
+        bottom_layout.addWidget(sep_mid1)
 
+        # Center: Undo & Redo
         bottom_layout.addWidget(self.undo_btn)
         bottom_layout.addWidget(self.redo_btn)
 
-        sep5 = QFrame()
-        sep5.setObjectName("separator")
-        sep5.setFrameShape(QFrame.VLine)
-        sep5.setFixedWidth(2)
-        sep5.setFixedHeight(28)
-        bottom_layout.addWidget(sep5)
+        sep_mid2 = QFrame()
+        sep_mid2.setObjectName("separator")
+        sep_mid2.setFrameShape(QFrame.VLine)
+        sep_mid2.setFixedWidth(2)
+        sep_mid2.setFixedHeight(24)
+        bottom_layout.addWidget(sep_mid2)
 
+        # Center: Save
         bottom_layout.addWidget(self.save_btn)
         bottom_layout.addStretch()
 
@@ -1624,8 +2067,8 @@ class BackgroundRemoverApp(QMainWindow):
         container.setLayout(main_layout)
         self.setCentralWidget(container)
 
-        # --- Apply default theme ---
-        self.setStyleSheet(DARK_STYLESHEET)
+        # --- Apply default theme (Light) ---
+        self.setStyleSheet(LIGHT_STYLESHEET)
         self.left_image_label.installEventFilter(self)
         self.left_image_label.mousePressEvent = self.start_drag
         self.left_image_label.mouseMoveEvent = self.drag_image
@@ -1639,7 +2082,7 @@ class BackgroundRemoverApp(QMainWindow):
         # --- AUTO-UPDATE CHECK ---
         if has_updater:
             # Run silent check after UI init
-            from PyQt5.QtCore import QTimer
+            from PySide6.QtCore import QTimer
             QTimer.singleShot(2000, self.check_for_updates_silently)
 
         # --- FIRST-TIME USER TOUR ---
@@ -1714,37 +2157,100 @@ class BackgroundRemoverApp(QMainWindow):
     def show_about(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("About BG Remover")
-        dialog.setFixedSize(420, 280)
+        dialog.setFixedSize(440, 360)
         
         layout = QVBoxLayout()
         layout.setContentsMargins(24, 24, 24, 20)
         layout.setSpacing(12)
         
         title = QLabel("🎨 AI Background Remover")
-        title.setFont(QFont("Segoe UI", 16, QFont.Bold))
+        title.setFont(QFont("Inter", 16, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("color: #a5b4fc;")
+        
+        is_dark = getattr(self, "is_dark", False)
+        if is_dark:
+            title.setStyleSheet("color: #a5b4fc;")
+            box_bg = "#25263b"
+            box_border = "1px solid #3f3f5f"
+            title_color = "#a5b4fc"
+            sub_text_color = "#8888a0"
+        else:
+            title.setStyleSheet("color: #4f46e5;")
+            box_bg = "#f4f5fa"
+            box_border = "1px solid #d0d1e0"
+            title_color = "#4f46e5"
+            sub_text_color = "#666688"
+            
         layout.addWidget(title)
         
         version = QLabel(f"Version {APP_VERSION}")
-        version.setFont(QFont("Segoe UI", 10))
+        version.setFont(QFont("Inter", 10))
         version.setAlignment(Qt.AlignCenter)
         version.setStyleSheet("color: #8888a0;")
         layout.addWidget(version)
         
-        layout.addSpacing(8)
+        layout.addSpacing(4)
         
-        info = QLabel(
-            f"<p style='text-align: center;'>Developed by <b>{AppConfig.COMPANY_NAME}</b><br>"
-            f"© 2025 All Rights Reserved.</p>"
-            f"<p style='text-align: center; color: #8888a0;'>Powered by advanced AI models:<br>"
-            f"U²Net · MODNet · IS-Net · BASNet · BiRefNet</p>"
-        )
-        info.setFont(QFont("Segoe UI", 10))
-        info.setWordWrap(True)
-        info.setTextFormat(Qt.RichText)
-        info.setAlignment(Qt.AlignCenter)
-        layout.addWidget(info)
+        box_style = f"""
+            QFrame {{
+                background-color: {box_bg};
+                border: {box_border};
+                border-radius: 10px;
+            }}
+            QLabel {{
+                border: none;
+                background: transparent;
+            }}
+        """
+        
+        # Box 1: Developer info
+        dev_frame = QFrame()
+        dev_frame.setStyleSheet(box_style)
+        dev_layout = QVBoxLayout(dev_frame)
+        dev_layout.setContentsMargins(12, 10, 12, 10)
+        dev_layout.setSpacing(4)
+        
+        dev_label = QLabel(f"Developed by <b>{AppConfig.COMPANY_NAME}</b>")
+        dev_label.setFont(QFont("Inter", 10))
+        dev_label.setTextFormat(Qt.RichText)
+        dev_label.setAlignment(Qt.AlignCenter)
+        if is_dark:
+            dev_label.setStyleSheet("color: #e0e0ee;")
+        else:
+            dev_label.setStyleSheet("color: #333355;")
+            
+        copyright_label = QLabel("© 2025 All Rights Reserved")
+        copyright_label.setFont(QFont("Inter", 9))
+        copyright_label.setAlignment(Qt.AlignCenter)
+        copyright_label.setStyleSheet(f"color: {sub_text_color};")
+        
+        dev_layout.addWidget(dev_label)
+        dev_layout.addWidget(copyright_label)
+        layout.addWidget(dev_frame)
+        
+        # Box 2: AI models info
+        ai_frame = QFrame()
+        ai_frame.setStyleSheet(box_style)
+        ai_layout = QVBoxLayout(ai_frame)
+        ai_layout.setContentsMargins(12, 10, 12, 10)
+        ai_layout.setSpacing(4)
+        
+        ai_title = QLabel("Powered by advanced AI models")
+        ai_title.setFont(QFont("Inter", 9, QFont.Bold))
+        ai_title.setAlignment(Qt.AlignCenter)
+        ai_title.setStyleSheet(f"color: {title_color};")
+        
+        ai_desc = QLabel("U²Net · MODNet · IS-Net · BASNet · BiRefNet")
+        ai_desc.setFont(QFont("Inter", 9))
+        ai_desc.setAlignment(Qt.AlignCenter)
+        if is_dark:
+            ai_desc.setStyleSheet("color: #e0e0ee;")
+        else:
+            ai_desc.setStyleSheet("color: #333355;")
+            
+        ai_layout.addWidget(ai_title)
+        ai_layout.addWidget(ai_desc)
+        layout.addWidget(ai_frame)
         
         layout.addStretch()
         
@@ -1827,7 +2333,7 @@ class BackgroundRemoverApp(QMainWindow):
         info_label.setWordWrap(True)
         info_label.setTextFormat(Qt.RichText)
         info_label.setOpenExternalLinks(True)
-        info_label.setFont(QFont("Segoe UI", 10))
+        info_label.setFont(QFont("Inter", 10))
         layout.addWidget(info_label)
         
         btn_layout = QHBoxLayout()
@@ -1835,12 +2341,12 @@ class BackgroundRemoverApp(QMainWindow):
         
         email_btn = QPushButton("✉  Send Feedback via Email")
         email_btn.setObjectName("primaryBtn")
-        email_btn.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        email_btn.setFont(QFont("Inter", 10, QFont.Bold))
         email_btn.clicked.connect(lambda: webbrowser.open("mailto:meeranrashith166@gmail.com?subject=BG Remover Feedback"))
         
         close_btn = QPushButton("Close")
         close_btn.setObjectName("secondaryBtn")
-        close_btn.setFont(QFont("Segoe UI", 10))
+        close_btn.setFont(QFont("Inter", 10))
         close_btn.clicked.connect(dialog.accept)
         
         btn_layout.addWidget(email_btn)
@@ -1856,7 +2362,7 @@ class BackgroundRemoverApp(QMainWindow):
         icon_path = os.path.join(ASSETS_DIR, icon_file)
         if os.path.exists(icon_path):
             btn.setIcon(QIcon(icon_path))
-            from PyQt5.QtCore import QSize
+            from PySide6.QtCore import QSize
             btn.setIconSize(QSize(24, 24))
         btn.setFont(font)
         btn.clicked.connect(callback)
