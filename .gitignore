@@ -15,3 +15,8 @@ venv/
 build/
 dist/
 *.spec
+
+# PyUpdater private keys and configs
+keypack.pyu
+.pyupdater/
+
