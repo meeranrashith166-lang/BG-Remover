@@ -41,7 +41,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; IMPORTANT: Update the path below to point to your build output directory (dist/app or dist/BGRemover)
-Source: "dist\win\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\win\win.exe"; DestDir: "{app}"; DestName: "BGRemover.exe"; Flags: ignoreversion
+Source: "dist\win\*"; DestDir: "{app}"; Excludes: "win.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
