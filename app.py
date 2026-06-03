@@ -270,6 +270,12 @@ MODEL_DOWNLOAD_URLS = {
 def download_model_on_demand(model_name, model_path, progress_callback=None):
     """Downloads the selected model from Hugging Face if not present locally.
     Downloads once and caches permanently in LOCALAPPDATA."""
+    import ssl
+    try:
+        ssl._create_default_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+
     filename = os.path.basename(model_path)
     url = MODEL_DOWNLOAD_URLS.get(filename)
     
