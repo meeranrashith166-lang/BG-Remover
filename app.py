@@ -125,7 +125,7 @@ except ImportError:
 try:
     import ben2
     has_ben2 = True
-except ImportError:
+except Exception:
     has_ben2 = False
 
 
